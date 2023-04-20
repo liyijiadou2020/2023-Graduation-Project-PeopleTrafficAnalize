@@ -327,6 +327,9 @@ def parse_args():
     parser.add_argument("--video_out_path", default='./test_video/vid_out.mp4', type=str)
     parser.add_argument("--camera", action="store", dest="cam", type=int, default="-1")
     parser.add_argument('--device', default='cuda:0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument("--display", default=True, help='True: show window, False: not')
+    parser.add_argument("--frame_interval", type=int, default=1)
+    parser.add_argument("--cpu", dest="use_cuda", action="store_false", default=True)
     # yolov5
     parser.add_argument('--weights', nargs='+', type=str, default='./weights/yolov5s.pt', help='model.pt path(s)')
     parser.add_argument('--img-size', type=int, default=1080, help='inference size (pixels)')
@@ -338,9 +341,6 @@ def parse_args():
     # deep_sort
     parser.add_argument("--sort", default=False, help='True: sort model or False: reid model')
     parser.add_argument("--config_deepsort", type=str, default="./configs/deep_sort.yaml")
-    parser.add_argument("--display", default=True, help='show resule, 是否展示窗口')
-    parser.add_argument("--frame_interval", type=int, default=1)
-    parser.add_argument("--cpu", dest="use_cuda", action="store_false", default=True)
 
     return parser.parse_args()
 

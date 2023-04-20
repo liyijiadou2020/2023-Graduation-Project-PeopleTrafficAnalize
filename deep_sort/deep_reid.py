@@ -15,8 +15,6 @@ from demo import Reid_feature
 # from predictor import FeatureExtractionDemo
 
 
-
-
 __all__ = ['DeepReid']
 
 
@@ -26,7 +24,8 @@ class DeepReid(object):
         self.nms_max_overlap = nms_max_overlap
 
         # self.extractor = Extractor(model_path, use_cuda=use_cuda)
-        self.extractor = Reid_feature()
+        self.extractor = Reid_feature() #在提取特征的地方使用了fast reid的特征提取器
+
         max_cosine_distance = max_dist
         nn_budget = 100
         metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
@@ -116,7 +115,6 @@ class DeepReid(object):
     
     def _get_features(self, bbox_xywh, ori_img):
         im_crops = []
-        t2 = time.time()
         for box in bbox_xywh:
             x1,y1,x2,y2 = self._xywh_to_xyxy(box)
             im = ori_img[y1:y2,x1:x2]
@@ -124,11 +122,8 @@ class DeepReid(object):
             im = im[:, :, ::-1]   # reid 前处理
             im = cv2.resize(im, (128, 256), interpolation=cv2.INTER_CUBIC)
             im_crops.append(torch.as_tensor(im.astype("float32").transpose(2, 0, 1))[None])
-        # print('pre time:', time.time() - t2)
         if im_crops:
-            t1 = time.time()
             features = self.extractor(im_crops)
-            # print('reid features time:', time.time() - t1, features.shape)
         else:
             features = np.array([])
         return features
