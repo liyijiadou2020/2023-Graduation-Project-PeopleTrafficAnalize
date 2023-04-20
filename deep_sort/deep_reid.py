@@ -24,7 +24,7 @@ class DeepReid(object):
         self.nms_max_overlap = nms_max_overlap
 
         # self.extractor = Extractor(model_path, use_cuda=use_cuda)
-        self.extractor = Reid_feature() #在提取特征的地方使用了fast reid的特征提取器
+        self.extractor = Reid_feature() # 在提取特征的地方使用了fast reid的特征提取器
 
         max_cosine_distance = max_dist
         nn_budget = 100

@@ -74,9 +74,9 @@ class TrafficMonitor():
             idx_frame += 1
             start_time = time_synchronized()
             # yolo detection
-            bbox_xywh, cls_conf, cls_ids, xy = self.person_detect_out.detect(video_path, img, ori_img, vid_cap)
+            bbox_xywh, cls_conf, cls_ids, xy = self.person_detect.detect(video_path, img, ori_img, vid_cap)
             # do tracking # features: reid模型输出512dim特征
-            outputs, features = self.deepsort_out.update(bbox_xywh, cls_conf, ori_img)
+            outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
             # 1. 画黄线
             yellow_line_in = self.draw_yellow_line_in(ori_img)
             # 2. 统计跟踪的结果：
@@ -233,9 +233,8 @@ class TrafficMonitor():
                         up_count += 1
                     if angle < 0: # 出店
                         down_count += 1
-                        # 进店的时候，把人物的图像抠出来-------------
+                        # 出店的时候，把人物的图像抠出来------------- TODO: 该名称应该表示为入店时分配的ID
                         cv2.line(ori_img, yellow_line_out[0], yellow_line_out[1], (0, 0, 0), 1)  # 消除线条
-
                         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
                         path = str('./runs/reid_output/exit/track_id-{}.jpg'.format(track_id))
                         self.makedir(path)
