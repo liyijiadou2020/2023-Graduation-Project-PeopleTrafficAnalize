@@ -1,0 +1,581 @@
+Yolov5-Deepsort-Fastreid
+ ├── configs
+ │   ├── deep_sort.yaml
+ │   └── simkai.ttf
+ ├── deep_sort
+ │   ├── deep
+ │   │   ├── checkpoint
+ │   │   │   ├── ckpt.t7
+ │   │   │   └── original_ckpt.t7
+ │   │   ├── evaluate.py
+ │   │   ├── feature_extractor.py
+ │   │   ├── model.py
+ │   │   ├── original_model.py
+ │   │   ├── test.py
+ │   │   ├── train.py
+ │   │   ├── __init__.py
+ │   │   └── __pycache__
+ │   │       ├── feature_extractor.cpython-39.pyc
+ │   │       ├── model.cpython-39.pyc
+ │   │       └── __init__.cpython-39.pyc
+ │   ├── deep_reid.py
+ │   ├── deep_sort.py
+ │   ├── README.md
+ │   ├── sort
+ │   │   ├── detection.py
+ │   │   ├── iou_matching.py
+ │   │   ├── kalman_filter.py
+ │   │   ├── linear_assignment.py
+ │   │   ├── nn_matching.py
+ │   │   ├── preprocessing.py
+ │   │   ├── track.py
+ │   │   ├── tracker.py
+ │   │   ├── __init__.py
+ │   │   └── __pycache__
+ │   │       ├── detection.cpython-39.pyc
+ │   │       ├── iou_matching.cpython-39.pyc
+ │   │       ├── kalman_filter.cpython-39.pyc
+ │   │       ├── linear_assignment.cpython-39.pyc
+ │   │       ├── nn_matching.cpython-39.pyc
+ │   │       ├── preprocessing.cpython-39.pyc
+ │   │       ├── track.cpython-39.pyc
+ │   │       ├── tracker.cpython-39.pyc
+ │   │       └── __init__.cpython-39.pyc
+ │   ├── __init__.py
+ │   └── __pycache__
+ │       ├── deep_reid.cpython-39.pyc
+ │       ├── deep_sort.cpython-39.pyc
+ │       └── __init__.cpython-39.pyc
+ ├── detect.py
+ ├── Dockerfile
+ ├── fast_reid
+ │   ├── configs
+ │   │   ├── Base-AGW.yml
+ │   │   ├── Base-bagtricks.yml
+ │   │   ├── Base-MGN.yml
+ │   │   ├── Base-SBS.yml
+ │   │   ├── DukeMTMC
+ │   │   │   ├── AGW_R101-ibn.yml
+ │   │   │   ├── AGW_R50-ibn.yml
+ │   │   │   ├── AGW_R50.yml
+ │   │   │   ├── AGW_S50.yml
+ │   │   │   ├── bagtricks_R101-ibn.yml
+ │   │   │   ├── bagtricks_R50-ibn.yml
+ │   │   │   ├── bagtricks_R50.yml
+ │   │   │   ├── bagtricks_S50.yml
+ │   │   │   ├── mgn_R50-ibn.yml
+ │   │   │   ├── sbs_R101-ibn.yml
+ │   │   │   ├── sbs_R50-ibn.yml
+ │   │   │   ├── sbs_R50.yml
+ │   │   │   └── sbs_S50.yml
+ │   │   ├── Market1501
+ │   │   │   ├── AGW_R101-ibn.yml
+ │   │   │   ├── AGW_R50-ibn.yml
+ │   │   │   ├── AGW_R50.yml
+ │   │   │   ├── AGW_S50.yml
+ │   │   │   ├── bagtricks_R101-ibn.yml
+ │   │   │   ├── bagtricks_R50-ibn.yml
+ │   │   │   ├── bagtricks_R50.yml
+ │   │   │   ├── bagtricks_S50.yml
+ │   │   │   ├── bagtricks_vit.yml
+ │   │   │   ├── mgn_R50-ibn.yml
+ │   │   │   ├── sbs_R101-ibn.yml
+ │   │   │   ├── sbs_R50-ibn.yml
+ │   │   │   ├── sbs_R50.yml
+ │   │   │   └── sbs_S50.yml
+ │   │   ├── MSMT17
+ │   │   │   ├── AGW_R101-ibn.yml
+ │   │   │   ├── AGW_R50-ibn.yml
+ │   │   │   ├── AGW_R50.yml
+ │   │   │   ├── AGW_S50.yml
+ │   │   │   ├── bagtricks_R101-ibn.yml
+ │   │   │   ├── bagtricks_R50-ibn.yml
+ │   │   │   ├── bagtricks_R50.yml
+ │   │   │   ├── bagtricks_S50.yml
+ │   │   │   ├── mgn_R50-ibn.yml
+ │   │   │   ├── sbs_R101-ibn.yml
+ │   │   │   ├── sbs_R50-ibn.yml
+ │   │   │   ├── sbs_R50.yml
+ │   │   │   └── sbs_S50.yml
+ │   │   ├── VehicleID
+ │   │   │   └── bagtricks_R50-ibn.yml
+ │   │   ├── VeRi
+ │   │   │   └── sbs_R50-ibn.yml
+ │   │   └── VERIWild
+ │   │       └── bagtricks_R50-ibn.yml
+ │   ├── demo
+ │   │   ├── demo.py
+ │   │   ├── person_bank.py
+ │   │   ├── plot_roc_with_pickle.py
+ │   │   ├── predictor.py
+ │   │   ├── README.md
+ │   │   ├── run_demo.sh
+ │   │   ├── visualize_result.py
+ │   │   └── __pycache__
+ │   │       ├── demo.cpython-39.pyc
+ │   │       ├── person_bank.cpython-39.pyc
+ │   │       └── predictor.cpython-39.pyc
+ │   ├── fastreid
+ │   │   ├── config
+ │   │   │   ├── config.py
+ │   │   │   ├── defaults.py
+ │   │   │   ├── __init__.py
+ │   │   │   └── __pycache__
+ │   │   │       ├── config.cpython-39.pyc
+ │   │   │       ├── defaults.cpython-39.pyc
+ │   │   │       └── __init__.cpython-39.pyc
+ │   │   ├── data
+ │   │   │   ├── build.py
+ │   │   │   ├── common.py
+ │   │   │   ├── datasets
+ │   │   │   │   ├── AirportALERT.py
+ │   │   │   │   ├── bases.py
+ │   │   │   │   ├── caviara.py
+ │   │   │   │   ├── cuhk03.py
+ │   │   │   │   ├── cuhk_sysu.py
+ │   │   │   │   ├── dukemtmcreid.py
+ │   │   │   │   ├── iLIDS.py
+ │   │   │   │   ├── lpw.py
+ │   │   │   │   ├── market1501.py
+ │   │   │   │   ├── msmt17.py
+ │   │   │   │   ├── pes3d.py
+ │   │   │   │   ├── pku.py
+ │   │   │   │   ├── prai.py
+ │   │   │   │   ├── saivt.py
+ │   │   │   │   ├── sensereid.py
+ │   │   │   │   ├── shinpuhkan.py
+ │   │   │   │   ├── sysu_mm.py
+ │   │   │   │   ├── thermalworld.py
+ │   │   │   │   ├── vehicleid.py
+ │   │   │   │   ├── veri.py
+ │   │   │   │   ├── veriwild.py
+ │   │   │   │   ├── viper.py
+ │   │   │   │   ├── wildtracker.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       ├── AirportALERT.cpython-39.pyc
+ │   │   │   │       ├── bases.cpython-39.pyc
+ │   │   │   │       ├── caviara.cpython-39.pyc
+ │   │   │   │       ├── cuhk03.cpython-39.pyc
+ │   │   │   │       ├── cuhk_sysu.cpython-39.pyc
+ │   │   │   │       ├── dukemtmcreid.cpython-39.pyc
+ │   │   │   │       ├── iLIDS.cpython-39.pyc
+ │   │   │   │       ├── lpw.cpython-39.pyc
+ │   │   │   │       ├── market1501.cpython-39.pyc
+ │   │   │   │       ├── msmt17.cpython-39.pyc
+ │   │   │   │       ├── pes3d.cpython-39.pyc
+ │   │   │   │       ├── pku.cpython-39.pyc
+ │   │   │   │       ├── prai.cpython-39.pyc
+ │   │   │   │       ├── saivt.cpython-39.pyc
+ │   │   │   │       ├── sensereid.cpython-39.pyc
+ │   │   │   │       ├── shinpuhkan.cpython-39.pyc
+ │   │   │   │       ├── sysu_mm.cpython-39.pyc
+ │   │   │   │       ├── thermalworld.cpython-39.pyc
+ │   │   │   │       ├── vehicleid.cpython-39.pyc
+ │   │   │   │       ├── veri.cpython-39.pyc
+ │   │   │   │       ├── veriwild.cpython-39.pyc
+ │   │   │   │       ├── viper.cpython-39.pyc
+ │   │   │   │       ├── wildtracker.cpython-39.pyc
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── data_utils.py
+ │   │   │   ├── samplers
+ │   │   │   │   ├── data_sampler.py
+ │   │   │   │   ├── triplet_sampler.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       ├── data_sampler.cpython-39.pyc
+ │   │   │   │       ├── triplet_sampler.cpython-39.pyc
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── transforms
+ │   │   │   │   ├── autoaugment.py
+ │   │   │   │   ├── build.py
+ │   │   │   │   ├── functional.py
+ │   │   │   │   ├── transforms.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       ├── autoaugment.cpython-39.pyc
+ │   │   │   │       ├── build.cpython-39.pyc
+ │   │   │   │       ├── functional.cpython-39.pyc
+ │   │   │   │       ├── transforms.cpython-39.pyc
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── __init__.py
+ │   │   │   └── __pycache__
+ │   │   │       ├── build.cpython-39.pyc
+ │   │   │       ├── common.cpython-39.pyc
+ │   │   │       ├── data_utils.cpython-39.pyc
+ │   │   │       └── __init__.cpython-39.pyc
+ │   │   ├── engine
+ │   │   │   ├── defaults.py
+ │   │   │   ├── hooks.py
+ │   │   │   ├── launch.py
+ │   │   │   ├── train_loop.py
+ │   │   │   ├── __init__.py
+ │   │   │   └── __pycache__
+ │   │   │       ├── defaults.cpython-39.pyc
+ │   │   │       ├── hooks.cpython-39.pyc
+ │   │   │       ├── launch.cpython-39.pyc
+ │   │   │       ├── train_loop.cpython-39.pyc
+ │   │   │       └── __init__.cpython-39.pyc
+ │   │   ├── evaluation
+ │   │   │   ├── evaluator.py
+ │   │   │   ├── query_expansion.py
+ │   │   │   ├── rank.py
+ │   │   │   ├── rank_cylib
+ │   │   │   │   ├── Makefile
+ │   │   │   │   ├── rank_cy.c
+ │   │   │   │   ├── rank_cy.cpython-37m-x86_64-linux-gnu.so
+ │   │   │   │   ├── rank_cy.pyx
+ │   │   │   │   ├── roc_cy.c
+ │   │   │   │   ├── roc_cy.cpython-37m-x86_64-linux-gnu.so
+ │   │   │   │   ├── roc_cy.pyx
+ │   │   │   │   ├── setup.py
+ │   │   │   │   ├── test_cython.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── reid_evaluation.py
+ │   │   │   ├── rerank.py
+ │   │   │   ├── roc.py
+ │   │   │   ├── testing.py
+ │   │   │   ├── __init__.py
+ │   │   │   └── __pycache__
+ │   │   │       ├── evaluator.cpython-39.pyc
+ │   │   │       ├── query_expansion.cpython-39.pyc
+ │   │   │       ├── rank.cpython-39.pyc
+ │   │   │       ├── reid_evaluation.cpython-39.pyc
+ │   │   │       ├── roc.cpython-39.pyc
+ │   │   │       ├── testing.cpython-39.pyc
+ │   │   │       └── __init__.cpython-39.pyc
+ │   │   ├── layers
+ │   │   │   ├── activation.py
+ │   │   │   ├── arc_softmax.py
+ │   │   │   ├── batch_drop.py
+ │   │   │   ├── batch_norm.py
+ │   │   │   ├── circle_softmax.py
+ │   │   │   ├── context_block.py
+ │   │   │   ├── cos_softmax.py
+ │   │   │   ├── frn.py
+ │   │   │   ├── gather_layer.py
+ │   │   │   ├── non_local.py
+ │   │   │   ├── pooling.py
+ │   │   │   ├── se_layer.py
+ │   │   │   ├── splat.py
+ │   │   │   ├── __init__.py
+ │   │   │   └── __pycache__
+ │   │   │       ├── activation.cpython-39.pyc
+ │   │   │       ├── arc_softmax.cpython-39.pyc
+ │   │   │       ├── batch_drop.cpython-39.pyc
+ │   │   │       ├── batch_norm.cpython-39.pyc
+ │   │   │       ├── circle_softmax.cpython-39.pyc
+ │   │   │       ├── context_block.cpython-39.pyc
+ │   │   │       ├── cos_softmax.cpython-39.pyc
+ │   │   │       ├── frn.cpython-39.pyc
+ │   │   │       ├── gather_layer.cpython-39.pyc
+ │   │   │       ├── non_local.cpython-39.pyc
+ │   │   │       ├── pooling.cpython-39.pyc
+ │   │   │       ├── se_layer.cpython-39.pyc
+ │   │   │       ├── splat.cpython-39.pyc
+ │   │   │       └── __init__.cpython-39.pyc
+ │   │   ├── modeling
+ │   │   │   ├── backbones
+ │   │   │   │   ├── build.py
+ │   │   │   │   ├── osnet.py
+ │   │   │   │   ├── regnet
+ │   │   │   │   │   ├── config.py
+ │   │   │   │   │   ├── effnet
+ │   │   │   │   │   │   ├── EN-B0_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── EN-B1_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── EN-B2_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── EN-B3_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── EN-B4_dds_8gpu.yaml
+ │   │   │   │   │   │   └── EN-B5_dds_8gpu.yaml
+ │   │   │   │   │   ├── effnet.py
+ │   │   │   │   │   ├── regnet.py
+ │   │   │   │   │   ├── regnetx
+ │   │   │   │   │   │   ├── RegNetX-1.6GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-12GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-16GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-200MF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-3.2GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-32GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-4.0GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-400MF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-6.4GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-600MF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetX-8.0GF_dds_8gpu.yaml
+ │   │   │   │   │   │   └── RegNetX-800MF_dds_8gpu.yaml
+ │   │   │   │   │   ├── regnety
+ │   │   │   │   │   │   ├── RegNetY-1.6GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-12GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-16GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-200MF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-3.2GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-32GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-4.0GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-400MF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-6.4GF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-600MF_dds_8gpu.yaml
+ │   │   │   │   │   │   ├── RegNetY-8.0GF_dds_8gpu.yaml
+ │   │   │   │   │   │   └── RegNetY-800MF_dds_8gpu.yaml
+ │   │   │   │   │   ├── __init__.py
+ │   │   │   │   │   └── __pycache__
+ │   │   │   │   │       ├── config.cpython-39.pyc
+ │   │   │   │   │       ├── effnet.cpython-39.pyc
+ │   │   │   │   │       ├── regnet.cpython-39.pyc
+ │   │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   │   ├── resnest.py
+ │   │   │   │   ├── resnet.py
+ │   │   │   │   ├── resnet_distill.py
+ │   │   │   │   ├── resnext.py
+ │   │   │   │   ├── shufflenet.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       ├── build.cpython-39.pyc
+ │   │   │   │       ├── osnet.cpython-39.pyc
+ │   │   │   │       ├── resnest.cpython-39.pyc
+ │   │   │   │       ├── resnet.cpython-39.pyc
+ │   │   │   │       ├── resnet_distill.cpython-39.pyc
+ │   │   │   │       ├── resnext.cpython-39.pyc
+ │   │   │   │       ├── shufflenet.cpython-39.pyc
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── heads
+ │   │   │   │   ├── build.py
+ │   │   │   │   ├── embedding_head.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       ├── build.cpython-39.pyc
+ │   │   │   │       ├── embedding_head.cpython-39.pyc
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── losses
+ │   │   │   │   ├── circle_loss.py
+ │   │   │   │   ├── cross_entroy_loss.py
+ │   │   │   │   ├── focal_loss.py
+ │   │   │   │   ├── triplet_loss.py
+ │   │   │   │   ├── utils.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       ├── circle_loss.cpython-39.pyc
+ │   │   │   │       ├── cross_entroy_loss.cpython-39.pyc
+ │   │   │   │       ├── focal_loss.cpython-39.pyc
+ │   │   │   │       ├── triplet_loss.cpython-39.pyc
+ │   │   │   │       ├── utils.cpython-39.pyc
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── meta_arch
+ │   │   │   │   ├── baseline.py
+ │   │   │   │   ├── build.py
+ │   │   │   │   ├── distiller.py
+ │   │   │   │   ├── mgn.py
+ │   │   │   │   ├── moco.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       ├── baseline.cpython-39.pyc
+ │   │   │   │       ├── build.cpython-39.pyc
+ │   │   │   │       ├── distiller.cpython-39.pyc
+ │   │   │   │       ├── mgn.cpython-39.pyc
+ │   │   │   │       ├── moco.cpython-39.pyc
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── __init__.py
+ │   │   │   └── __pycache__
+ │   │   │       └── __init__.cpython-39.pyc
+ │   │   ├── solver
+ │   │   │   ├── build.py
+ │   │   │   ├── lr_scheduler.py
+ │   │   │   ├── optim
+ │   │   │   │   ├── lamb.py
+ │   │   │   │   ├── swa.py
+ │   │   │   │   ├── __init__.py
+ │   │   │   │   └── __pycache__
+ │   │   │   │       ├── lamb.cpython-39.pyc
+ │   │   │   │       ├── swa.cpython-39.pyc
+ │   │   │   │       └── __init__.cpython-39.pyc
+ │   │   │   ├── __init__.py
+ │   │   │   └── __pycache__
+ │   │   │       ├── build.cpython-39.pyc
+ │   │   │       ├── lr_scheduler.cpython-39.pyc
+ │   │   │       └── __init__.cpython-39.pyc
+ │   │   ├── utils
+ │   │   │   ├── checkpoint.py
+ │   │   │   ├── collect_env.py
+ │   │   │   ├── comm.py
+ │   │   │   ├── compute_dist.py
+ │   │   │   ├── env.py
+ │   │   │   ├── events.py
+ │   │   │   ├── faiss_utils.py
+ │   │   │   ├── file_io.py
+ │   │   │   ├── history_buffer.py
+ │   │   │   ├── logger.py
+ │   │   │   ├── precision_bn.py
+ │   │   │   ├── registry.py
+ │   │   │   ├── summary.py
+ │   │   │   ├── timer.py
+ │   │   │   ├── visualizer.py
+ │   │   │   ├── weight_init.py
+ │   │   │   ├── __init__.py
+ │   │   │   └── __pycache__
+ │   │   │       ├── checkpoint.cpython-39.pyc
+ │   │   │       ├── collect_env.cpython-39.pyc
+ │   │   │       ├── comm.cpython-39.pyc
+ │   │   │       ├── compute_dist.cpython-39.pyc
+ │   │   │       ├── env.cpython-39.pyc
+ │   │   │       ├── events.cpython-39.pyc
+ │   │   │       ├── faiss_utils.cpython-39.pyc
+ │   │   │       ├── file_io.cpython-39.pyc
+ │   │   │       ├── history_buffer.cpython-39.pyc
+ │   │   │       ├── logger.cpython-39.pyc
+ │   │   │       ├── precision_bn.cpython-39.pyc
+ │   │   │       ├── registry.cpython-39.pyc
+ │   │   │       ├── timer.cpython-39.pyc
+ │   │   │       ├── weight_init.cpython-39.pyc
+ │   │   │       └── __init__.cpython-39.pyc
+ │   │   ├── __init__.py
+ │   │   └── __pycache__
+ │   │       └── __init__.cpython-39.pyc
+ │   └── query
+ │       ├── names.npy
+ │       ├── query_features.npy
+ │       ├── track_id-115.jpg
+ │       ├── track_id-127.jpg
+ │       ├── track_id-13.jpg
+ │       ├── track_id-163.jpg
+ │       ├── track_id-17.jpg
+ │       ├── track_id-20.jpg
+ │       ├── track_id-204.jpg
+ │       ├── track_id-234.jpg
+ │       ├── track_id-238.jpg
+ │       ├── track_id-246.jpg
+ │       ├── track_id-32.jpg
+ │       ├── track_id-51.jpg
+ │       ├── track_id-73.jpg
+ │       ├── track_id-76.jpg
+ │       └── track_id-82.jpg
+ ├── hubconf.py
+ ├── kd-r34-r101_ibn
+ │   ├── config-test.yaml
+ │   ├── config.yaml
+ │   ├── config_orig.yaml
+ │   └── model_final.pth
+ ├── LICENSE
+ ├── models
+ │   ├── common.py
+ │   ├── experimental.py
+ │   ├── export.py
+ │   ├── hub
+ │   │   ├── yolov3-spp.yaml
+ │   │   ├── yolov5-fpn.yaml
+ │   │   └── yolov5-panet.yaml
+ │   ├── yolo.py
+ │   ├── yolov5l.yaml
+ │   ├── yolov5m.yaml
+ │   ├── yolov5s.yaml
+ │   ├── yolov5x.yaml
+ │   ├── __init__.py
+ │   └── __pycache__
+ │       ├── common.cpython-39.pyc
+ │       ├── experimental.cpython-39.pyc
+ │       ├── yolo.cpython-39.pyc
+ │       └── __init__.cpython-39.pyc
+ ├── pedestrians-cluster
+ │   ├── bin
+ │   │   └── README.md
+ │   ├── data
+ │   │   ├── input_pictures
+ │   │   │   ├── alldata
+ │   │   │   └── README.md
+ │   │   ├── output_pictures
+ │   │   │   └── README.md
+ │   │   └── tmp
+ │   │       └── README.md
+ │   ├── evaluation
+ │   │   ├── evaluate.py
+ │   │   ├── metrics.py
+ │   │   └── __init__.py
+ │   ├── face_cluster
+ │   │   ├── face_cluster_by_infomap.py
+ │   │   └── __init__.py
+ │   ├── face_feature_extract
+ │   │   ├── datasets
+ │   │   │   ├── bin_dataset.py
+ │   │   │   ├── filelist_dataset.py
+ │   │   │   ├── sampler.py
+ │   │   │   └── __init__.py
+ │   │   ├── extract_feature.py
+ │   │   ├── models
+ │   │   │   ├── classifier.py
+ │   │   │   ├── ext_layers
+ │   │   │   │   ├── hf_sampler.py
+ │   │   │   │   ├── hnsw_sampler.py
+ │   │   │   │   ├── ident.py
+ │   │   │   │   ├── paramclient.py
+ │   │   │   │   ├── test_ps.py
+ │   │   │   │   └── __init__.py
+ │   │   │   ├── hynet.py
+ │   │   │   ├── ir.py
+ │   │   │   ├── resnet.py
+ │   │   │   └── __init__.py
+ │   │   ├── pic_path
+ │   │   └── __init__.py
+ │   ├── main.py
+ │   ├── main_fastreid.py
+ │   ├── pred_label_path.txt
+ │   ├── pretrain_models
+ │   │   ├── README.md
+ │   │   └── __init__.py
+ │   ├── README-zh.md
+ │   ├── README.md
+ │   ├── requirements.txt
+ │   └── tools
+ │       ├── pic_path
+ │       ├── utils.py
+ │       └── __init__.py
+ ├── person_count.py
+ ├── person_detect_yolov5.py
+ ├── person_search_reid.py
+ ├── README.md
+ ├── requirements.txt
+ ├── runs
+ │   ├── names.npy
+ │   ├── query_features.npy
+ │   └── reid_output
+ │       ├── enter
+ │       │   ├── track_id-124.jpg
+ │       │   ├── track_id-139.jpg
+ │       │   ├── track_id-28.jpg
+ │       │   └── track_id-43.jpg
+ │       └── exit
+ │           ├── track_id-1.jpg
+ │           └── track_id-37.jpg
+ ├── test.py
+ ├── test_video
+ │   ├── MOT16-03.mp4
+ │   ├── test.mp4
+ │   ├── test2.mp4
+ │   ├── vid_in.mp4
+ │   └── vid_out.mp4
+ ├── train.py
+ ├── tutorial.ipynb
+ ├── utils
+ │   ├── activations.py
+ │   ├── datasets.py
+ │   ├── draw.py
+ │   ├── general.py
+ │   ├── google_utils.py
+ │   ├── log.py
+ │   ├── parser.py
+ │   ├── torch_utils.py
+ │   ├── __init__.py
+ │   └── __pycache__
+ │       ├── datasets.cpython-39.pyc
+ │       ├── draw.cpython-39.pyc
+ │       ├── general.cpython-39.pyc
+ │       ├── google_utils.cpython-39.pyc
+ │       ├── log.cpython-39.pyc
+ │       ├── parser.cpython-39.pyc
+ │       ├── torch_utils.cpython-39.pyc
+ │       └── __init__.cpython-39.pyc
+ ├── weights
+ │   ├── download_weights.sh
+ │   ├── yolov5s.pt
+ │   └── yolov5x.pt
+ ├── Ли Ицзя-КР-Грубокое Обучение.docx
+ ├── Ли Ицзя-КР-Грубокое Обучение.pdf
+ └── 文件结构.txt
