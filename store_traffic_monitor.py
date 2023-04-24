@@ -33,10 +33,10 @@ class TrafficMonitor():
         if not use_cuda:
             warnings.warn("Running in cpu mode which maybe very slow!", UserWarning)
         # YOLO person detection, pretrained YOLO model yolo5s.pt
-        self.person_detect = YoloPersonDetect(self.args, self.video_in_path)
-        self.person_detect_out = YoloPersonDetect(self.args, self.video_path_out)
+        self.yolo_model_in = YoloPersonDetect(self.args, self.video_in_path)
+        self.yolo_model_out = YoloPersonDetect(self.args, self.video_path_out)
         # Deepsort with ReID
-        self.deepsort = build_tracker(cfg, args.sort, use_cuda=use_cuda)
+        self.deepsort_in = build_tracker(cfg, args.sort, use_cuda=use_cuda)
         self.deepsort_out = build_tracker(cfg, args.sort, use_cuda=use_cuda)
         # Read video frame
         imgsz = check_img_size(args.img_size, s=32)  # check img_size
@@ -55,11 +55,11 @@ class TrafficMonitor():
             os.makedirs(dir_path)
 
     def deep_sort(self):
-        self.enter()  # enter store
+        self.enter_cam()  # enter store
         self.feature_extract()  # extract features of customers, who entered
-        self.out() # exit store
+        self.exit_cam()  # exit store
 
-    def enter(self):
+    def enter_cam(self):
         idx_frame = 0
         paths = {} # 每一个track的行动轨迹
         last_track_id = -1
@@ -74,9 +74,9 @@ class TrafficMonitor():
             idx_frame += 1
             start_time = time_synchronized()
             # yolo detection
-            bbox_xywh, cls_conf, cls_ids, xy = self.person_detect.detect(video_path, img, ori_img, vid_cap)
+            bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model_in.detect(video_path, img, ori_img, vid_cap)
             # do tracking # features: reid模型输出512dim特征
-            outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
+            outputs, features = self.deepsort_in.update(bbox_xywh, cls_conf, ori_img)
             # 1. 画黄线
             yellow_line_in = self.draw_yellow_line_in(ori_img)
             # 2. 统计跟踪的结果：
@@ -135,7 +135,7 @@ class TrafficMonitor():
                 identities = outputs[:, -1]
                 ori_im = draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
                 for bb_xyxy in bbox_xyxy:
-                    bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
+                    bbox_tlwh.append(self.deepsort_in._xyxy_to_tlwh(bb_xyxy))
             end_time = time_synchronized()
             # 5. 展示处理后的图像
             if self.args.display:
@@ -185,7 +185,7 @@ class TrafficMonitor():
         self.names = names
         self.logger.info("Succeed extracting features for ReID.")
 
-    def out(self):
+    def exit_cam(self):
         idx_frame = 0
         results = []
         paths = {}
@@ -202,7 +202,7 @@ class TrafficMonitor():
             # print("[INFO] out index frame = ", idx_frame)
             start_time = time_synchronized()
             # yolo detection
-            bbox_xywh, cls_conf, cls_ids, xy = self.person_detect_out.detect(video_path, img, ori_img, vid_cap)
+            bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model_out.detect(video_path, img, ori_img, vid_cap)
             # do tracking  # features: reid model output 512 dim features
             outputs, features = self.deepsort_out.update(bbox_xywh, cls_conf, ori_img)
 
@@ -260,7 +260,7 @@ class TrafficMonitor():
                 identities = outputs[:, -1]
                 ori_im = draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
                 for bb_xyxy in bbox_xyxy:
-                    bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
+                    bbox_tlwh.append(self.deepsort_in._xyxy_to_tlwh(bb_xyxy))
 
             if self.args.display:
                 cv2.imshow("Out camera", ori_img)
