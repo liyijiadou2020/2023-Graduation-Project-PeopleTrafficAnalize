@@ -17,7 +17,7 @@ from ..datasets import DATASET_REGISTRY
 class cuhkSYSU(ImageDataset):
     r"""CUHK SYSU datasets.
 
-    The dataset is collected from two sources: street snap and movie.
+    The dataset_1 is collected from two sources: street snap and movie.
     In street snap, 12,490 images and 6,057 query persons were collected
     with movable cameras across hundreds of scenes while 5,694 images and
     2,375 query persons were selected from movies and TV dramas.

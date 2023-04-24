@@ -82,7 +82,7 @@ class Bottleneck(nn.Module):
 
 class ResNeXt(nn.Module):
     """
-    ResNext optimized for the ImageNet dataset, as specified in
+    ResNext optimized for the ImageNet dataset_1, as specified in
     https://arxiv.org/pdf/1611.05431.pdf
     """
 

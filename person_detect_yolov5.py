@@ -20,7 +20,7 @@ from utils.torch_utils import select_device, load_classifier, time_synchronized
 
 def set_parser():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--source', type=str, default='/media/zengwb/PC/Dataset/ReID-dataset/channel1/1.mp4',
+    # parser.add_argument('--source', type=str, default='/media/zengwb/PC/Dataset/ReID-dataset_1/channel1/1.mp4',
     #                     help='source')  # file/folder, 0 for webcam
     # parser.add_argument('--output', type=str, default='inference/output', help='output folder')  # output folder
     # parser.add_argument('--img-size', type=int, default=960, help='inference size (pixels)')
@@ -50,7 +50,8 @@ def bbox_r(width, height, *xyxy):
 
 
 class YoloPersonDetect():
-    def __init__(self, opt, source):
+    # def __init__(self, opt, source):
+    def __init__(self, opt):
         # Initialize
         self.device = opt.device if torch.cuda.is_available() else 'cpu'
         self.half = self.device != 'cpu'  # half precision only supported on CUDA
@@ -117,6 +118,6 @@ class YoloPersonDetect():
 
     
 if __name__ == '__main__':
-    person_detect = YoloPersonDetect(source='./test.mp4')
+    person_detect = YoloPersonDetect()
     with torch.no_grad():
             person_detect.detect()

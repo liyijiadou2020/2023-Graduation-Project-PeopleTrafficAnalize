@@ -47,7 +47,7 @@ testloader = torch.utils.data.DataLoader(
     torchvision.datasets.ImageFolder(test_dir, transform=transform_test),
     batch_size=64,shuffle=True
 )
-num_classes = max(len(trainloader.dataset.classes), len(testloader.dataset.classes))
+num_classes = max(len(trainloader.dataset_1.classes), len(testloader.dataset_1.classes))
 
 # net definition
 start_epoch = 0

@@ -19,7 +19,7 @@ class VeRiWild(ImageDataset):
 
     URL: `<https://github.com/PKU-IMRE/VERI-Wild>`_
 
-    Train dataset statistics:
+    Train dataset_1 statistics:
         - identities: 30671.
         - images: 277797.
     """
@@ -93,7 +93,7 @@ class VeRiWild(ImageDataset):
 @DATASET_REGISTRY.register()
 class SmallVeRiWild(VeRiWild):
     """VeRi-Wild.
-    Small test dataset statistics:
+    Small test dataset_1 statistics:
         - identities: 3000.
         - images: 41861.
     """
@@ -109,7 +109,7 @@ class SmallVeRiWild(VeRiWild):
 @DATASET_REGISTRY.register()
 class MediumVeRiWild(VeRiWild):
     """VeRi-Wild.
-    Medium test dataset statistics:
+    Medium test dataset_1 statistics:
         - identities: 5000.
         - images: 69389.
     """
@@ -125,7 +125,7 @@ class MediumVeRiWild(VeRiWild):
 @DATASET_REGISTRY.register()
 class LargeVeRiWild(VeRiWild):
     """VeRi-Wild.
-    Large test dataset statistics:
+    Large test dataset_1 statistics:
         - identities: 10000.
         - images: 138517.
     """

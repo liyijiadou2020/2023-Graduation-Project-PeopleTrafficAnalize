@@ -216,7 +216,7 @@ class DefaultTrainer(TrainerBase):
 
         # Assume these objects must be constructed in this order.
         data_loader = self.build_train_loader(cfg)
-        cfg = self.auto_scale_hyperparams(cfg, data_loader.dataset.num_classes)
+        cfg = self.auto_scale_hyperparams(cfg, data_loader.dataset_1.num_classes)
         model = self.build_model(cfg)
         optimizer = self.build_optimizer(cfg, model)
 
@@ -251,7 +251,7 @@ class DefaultTrainer(TrainerBase):
             **self.scheduler,
         )
 
-        self.iters_per_epoch = len(data_loader.dataset) // cfg.SOLVER.IMS_PER_BATCH
+        self.iters_per_epoch = len(data_loader.dataset_1) // cfg.SOLVER.IMS_PER_BATCH
 
         self.start_epoch = 0
         self.max_epoch = cfg.SOLVER.MAX_EPOCH
@@ -294,7 +294,7 @@ class DefaultTrainer(TrainerBase):
         cfg = self.cfg.clone()
         cfg.defrost()
         cfg.DATALOADER.NUM_WORKERS = 0  # save some memory and time for PreciseBN
-        cfg.DATASETS.NAMES = tuple([cfg.TEST.PRECISE_BN.DATASET])  # set dataset name for PreciseBN
+        cfg.DATASETS.NAMES = tuple([cfg.TEST.PRECISE_BN.DATASET])  # set dataset_1 name for PreciseBN
 
         ret = [
             hooks.IterationTimer(),
@@ -313,7 +313,7 @@ class DefaultTrainer(TrainerBase):
         #     )
 
         if cfg.TEST.PRECISE_BN.ENABLED and hooks.get_bn_modules(self.model):
-            logger.info("Prepare precise BN dataset")
+            logger.info("Prepare precise BN dataset_1")
             ret.append(hooks.PreciseBN(
                 # Run at the same freq as (but before) evaluation.
                 self.model,

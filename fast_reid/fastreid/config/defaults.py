@@ -183,9 +183,9 @@ _C.INPUT.RPT.PROB = 0.5
 # Dataset
 # -----------------------------------------------------------------------------
 _C.DATASETS = CN()
-# List of the dataset names for training
+# List of the dataset_1 names for training
 _C.DATASETS.NAMES = ("Market1501",)
-# List of the dataset names for testing
+# List of the dataset_1 names for testing
 _C.DATASETS.TESTS = ("Market1501",)
 # Combine trainset and testset joint training
 _C.DATASETS.COMBINEALL = False

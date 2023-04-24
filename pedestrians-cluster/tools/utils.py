@@ -315,7 +315,7 @@ def read_meta(fn_meta, start_pos=0, verbose=True):
 
 
 def get_path():
-    root_path = '/media/zengwb/PC/Dataset/ReID-dataset/channel1/provate3'
+    root_path = '/media/zengwb/PC/Dataset/ReID-dataset_1/channel1/provate3'
     images = os.listdir(root_path)
     picture_path = [os.path.join(root_path, image) for image in images]
     a = {}

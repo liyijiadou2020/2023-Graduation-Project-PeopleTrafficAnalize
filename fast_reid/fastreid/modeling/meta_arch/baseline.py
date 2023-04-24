@@ -40,8 +40,8 @@ class Baseline(nn.Module):
             assert "targets" in batched_inputs, "Person ID annotation are missing in training!"
             targets = batched_inputs["targets"].to(self.device)
 
-            # PreciseBN flag, When do preciseBN on different dataset, the number of classes in new dataset
-            # may be larger than that in the original dataset, so the circle/arcface will
+            # PreciseBN flag, When do preciseBN on different dataset_1, the number of classes in new dataset_1
+            # may be larger than that in the original dataset_1, so the circle/arcface will
             # throw an error. We just set all the targets to 0 to avoid this problem.
             if targets.sum() < 0: targets.zero_()
 

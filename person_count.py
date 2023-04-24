@@ -95,7 +95,7 @@ class YoloReid():
         self.logger = get_logger("root")
         self.args = args
         self.video_path = path
-        self.person_detect = YoloPersonDetect(self.args, self.video_path) # TODO: Person_detect类用来检测行人
+        self.person_detect = YoloPersonDetect(self.args)  # TODO: Person_detect类用来检测行人
         self.dataset = LoadImages(self.video_path, img_size=imgsz) # TODO: LoadImages类用来读取视频流
         self.deepsort = build_tracker(cfg, args.sort, use_cuda=use_cuda) # TODO: DeepSort或者DeepReID用来做目标跟踪
 

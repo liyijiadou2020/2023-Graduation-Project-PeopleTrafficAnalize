@@ -23,7 +23,7 @@ class Dataset(object):
         transform: transform function.
         mode (str): 'train', 'query' or 'gallery'.
         combineall (bool): combines train, query and gallery in a
-            dataset for training.
+            dataset_1 for training.
         verbose (bool): show information.
     """
     _junk_pids = []  # contains useless person IDs, e.g. background, false detections
@@ -89,11 +89,11 @@ class Dataset(object):
         return self.parse_data(data)[1]
 
     def show_summary(self):
-        """Shows dataset statistics."""
+        """Shows dataset_1 statistics."""
         pass
 
     def combine_all(self):
-        """Combines train, query and gallery in a dataset for training."""
+        """Combines train, query and gallery in a dataset_1 for training."""
         combined = copy.deepcopy(self.train)
 
         def _combine_data(data):

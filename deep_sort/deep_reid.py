@@ -21,9 +21,10 @@ __all__ = ['DeepReid']
 class DeepReid(object):
     def __init__(self, model_path, max_dist=0.2, min_confidence=0.3, nms_max_overlap=1.0, max_iou_distance=0.7, max_age=70, n_init=3, nn_budget=100, use_cuda=True):
         self.min_confidence = min_confidence
-        self.nms_max_overlap = nms_max_overlap
+        self.nms_max_overlap = nms_max_overlap # 非极大抑制阈值，设置为1代表不进行抑制
 
         # self.extractor = Extractor(model_path, use_cuda=use_cuda)
+        # 用于提取图片的embedding,返回的是一个batch图片对应的特征
         self.extractor = Reid_feature() # 在提取特征的地方使用了fast reid的特征提取器
 
         max_cosine_distance = max_dist

@@ -20,7 +20,7 @@ class VehicleID(ImageDataset):
 
     URL: `<https://pkuml.org/resources/pku-vehicleid.html>`_
 
-    Train dataset statistics:
+    Train dataset_1 statistics:
         - identities: 13164.
         - images: 113346.
     """
@@ -82,7 +82,7 @@ class VehicleID(ImageDataset):
 @DATASET_REGISTRY.register()
 class SmallVehicleID(VehicleID):
     """VehicleID.
-    Small test dataset statistics:
+    Small test dataset_1 statistics:
         - identities: 800.
         - images: 6493.
     """
@@ -97,7 +97,7 @@ class SmallVehicleID(VehicleID):
 @DATASET_REGISTRY.register()
 class MediumVehicleID(VehicleID):
     """VehicleID.
-    Medium test dataset statistics:
+    Medium test dataset_1 statistics:
         - identities: 1600.
         - images: 13377.
     """
@@ -112,7 +112,7 @@ class MediumVehicleID(VehicleID):
 @DATASET_REGISTRY.register()
 class LargeVehicleID(VehicleID):
     """VehicleID.
-    Large test dataset statistics:
+    Large test dataset_1 statistics:
         - identities: 2400.
         - images: 19777.
     """

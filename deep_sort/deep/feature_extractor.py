@@ -27,7 +27,7 @@ class Extractor(object):
         """
         TODO:
             1. to float with scale from 0 to 1
-            2. resize to (64, 128) as Market1501 dataset did
+            2. resize to (64, 128) as Market1501 dataset_1 did
             3. concatenate to a numpy array
             3. to torch Tensor
             4. normalize

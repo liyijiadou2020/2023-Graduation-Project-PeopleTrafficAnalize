@@ -138,7 +138,7 @@ def check_file(file):
 
 
 def check_dataset(dict):
-    # Download dataset if not found
+    # Download dataset_1 if not found
     val, s = dict.get('val'), dict.get('download')
     if val and len(val):
         val = [os.path.abspath(x) for x in (val if isinstance(val, list) else [val])]  # val path
@@ -747,7 +747,7 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
         if any(i):
             img_file = file.replace('labels', 'images').replace('txt', 'jpg')
             labels[:, 0] = 0  # reset class to 0
-            with open('new/images.txt', 'a') as f:  # add image to dataset list
+            with open('new/images.txt', 'a') as f:  # add image to dataset_1 list
                 f.write(img_file + '\n')
             with open('new/labels/' + Path(file).name, 'a') as f:  # write label
                 for l in labels[i]:
@@ -756,10 +756,10 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
 
 
 def kmean_anchors(path='./data/coco128.yaml', n=9, img_size=640, thr=4.0, gen=1000, verbose=True):
-    """ Creates kmeans-evolved anchors from training dataset
+    """ Creates kmeans-evolved anchors from training dataset_1
 
         Arguments:
-            path: path to dataset *.yaml, or a loaded dataset
+            path: path to dataset_1 *.yaml, or a loaded dataset_1
             n: number of anchors
             img_size: image size used for training
             thr: anchor-label wh ratio threshold hyperparameter hyp['anchor_t'] used for training, default=4.0
@@ -800,7 +800,7 @@ def kmean_anchors(path='./data/coco128.yaml', n=9, img_size=640, thr=4.0, gen=10
         from utils.datasets import LoadImagesAndLabels
         dataset = LoadImagesAndLabels(data_dict['train'], augment=True, rect=True)
     else:
-        dataset = path  # dataset
+        dataset = path  # dataset_1
 
     # Get label wh
     shapes = img_size * dataset.shapes / dataset.shapes.max(1, keepdims=True)
@@ -1176,7 +1176,7 @@ def plot_study_txt(f='study.txt', x=None):  # from utils.general import *; plot_
 
 
 def plot_labels(labels, save_dir=''):
-    # plot dataset labels
+    # plot dataset_1 labels
     c, b = labels[:, 0], labels[:, 1:].transpose()  # classes, boxes
     nc = int(c.max() + 1)  # number of classes
 

@@ -26,7 +26,7 @@ class TrainingSampler(Sampler):
     def __init__(self, size: int, shuffle: bool = True, seed: Optional[int] = None):
         """
         Args:
-            size (int): the total number of data of the underlying dataset to sample from
+            size (int): the total number of data of the underlying dataset_1 to sample from
             shuffle (bool): whether to shuffle the indices or not
             seed (int): the initial seed of the shuffle. Must be the same
                 across all workers. If None, will use a random seed shared
@@ -66,7 +66,7 @@ class InferenceSampler(Sampler):
     def __init__(self, size: int):
         """
         Args:
-            size (int): the total number of data of the underlying dataset to sample from
+            size (int): the total number of data of the underlying dataset_1 to sample from
         """
         self._size = size
         assert size > 0

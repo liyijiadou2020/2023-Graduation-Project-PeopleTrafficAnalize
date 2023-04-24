@@ -37,7 +37,7 @@ parser.add_argument('--strict', dest='strict', action='store_true')
 parser.add_argument('--output-path', default='bin/test.bin', type=str)
 
 # cluster config
-parser.add_argument('--input_picture_path', default='./ReID-dataset/channel1/provate3', type=str)
+parser.add_argument('--input_picture_path', default='./ReID-dataset_1/channel1/provate3', type=str)
 parser.add_argument('--output_picture_path', default='data/output_pictures/data_sample', type=str)
 parser.add_argument('--knn_method', default='faiss-cpu', type=str)
 parser.add_argument('--is_evaluate', default='False', type=str)

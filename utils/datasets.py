@@ -51,7 +51,7 @@ def exif_size(img):
 
 def create_dataloader(path, imgsz, batch_size, stride, opt, hyp=None, augment=False, cache=False, pad=0.0, rect=False,
                       rank=-1, world_size=1, workers=8):
-    # Make sure only the first process in DDP process the dataset first, and the following others can use the cache.
+    # Make sure only the first process in DDP process the dataset_1 first, and the following others can use the cache.
     with torch_distributed_zero_first(rank):
         dataset = LoadImagesAndLabels(path, imgsz, batch_size,
                                       augment=augment,  # augment images
@@ -339,7 +339,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
         cache_path = str(Path(self.label_files[0]).parent) + '.cache'  # cached labels
         if os.path.isfile(cache_path):
             cache = torch.load(cache_path)  # load
-            if cache['hash'] != get_hash(self.label_files + self.img_files):  # dataset changed
+            if cache['hash'] != get_hash(self.label_files + self.img_files):  # dataset_1 changed
                 cache = self.cache_labels(cache_path)  # re-cache
         else:
             cache = self.cache_labels(cache_path)  # cache
@@ -388,11 +388,11 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 if np.unique(l, axis=0).shape[0] < l.shape[0]:  # duplicate rows
                     nd += 1  # print('WARNING: duplicate rows in %s' % self.label_files[i])  # duplicate rows
                 if single_cls:
-                    l[:, 0] = 0  # force dataset into single-class mode
+                    l[:, 0] = 0  # force dataset_1 into single-class mode
                 self.labels[i] = l
                 nf += 1  # file found
 
-                # Create subdataset (a smaller dataset)
+                # Create subdataset (a smaller dataset_1)
                 if create_datasubset and ns < 1E4:
                     if ns == 0:
                         create_folder(path='./datasubset')
@@ -446,7 +446,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 pbar.desc = 'Caching images (%.1fGB)' % (gb / 1E9)
 
     def cache_labels(self, path='labels.cache'):
-        # Cache dataset labels, check images and read shapes
+        # Cache dataset_1 labels, check images and read shapes
         x = {}  # dict
         pbar = tqdm(zip(self.img_files, self.label_files), desc='Scanning images', total=len(self.img_files))
         for (img, label) in pbar:
@@ -476,7 +476,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
     # def __iter__(self):
     #     self.count = -1
-    #     print('ran dataset iter')
+    #     print('ran dataset_1 iter')
     #     #self.shuffled_vector = np.random.permutation(self.nF) if self.augment else np.arange(self.nF)
     #     return self
 
@@ -573,7 +573,7 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
 
 # Ancillary functions --------------------------------------------------------------------------------------------------
 def load_image(self, index):
-    # loads 1 image from dataset, returns img, original hw, resized hw
+    # loads 1 image from dataset_1, returns img, original hw, resized hw
     img = self.imgs[index]
     if img is None:  # not cached
         path = self.img_files[index]
@@ -888,7 +888,7 @@ def reduce_img_size(path='path/images', img_size=1024):  # from utils.datasets i
 
 
 def recursive_dataset2bmp(dataset='path/dataset_bmp'):  # from utils.datasets import *; recursive_dataset2bmp()
-    # Converts dataset to bmp (for faster training)
+    # Converts dataset_1 to bmp (for faster training)
     formats = [x.lower() for x in img_formats] + [x.upper() for x in img_formats]
     for a, b, files in os.walk(dataset):
         for file in tqdm(files, desc=a):

@@ -55,8 +55,8 @@ def get_parser():
         help='if use multiprocess for feature extraction.'
     )
     parser.add_argument(
-        "--dataset-name",
-        help="a test dataset name for visualizing ranking list."
+        "--dataset_1-name",
+        help="a test dataset_1 name for visualizing ranking list."
     )
     parser.add_argument(
         "--output",
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     cmc, all_ap, all_inp = evaluate_rank(distmat, q_pids, g_pids, q_camids, g_camids)
     logger.info("Finish computing APs for all query images!")
 
-    visualizer = Visualizer(test_loader.dataset)
+    visualizer = Visualizer(test_loader.dataset_1)
     visualizer.get_model_output(all_ap, distmat, q_pids, g_pids, q_camids, g_camids)
 
     logger.info("Start saving ROC curve ...")

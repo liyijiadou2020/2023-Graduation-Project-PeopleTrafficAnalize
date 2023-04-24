@@ -11,9 +11,9 @@ from fastreid.utils.logger import log_every_n_seconds
 
 class DatasetEvaluator:
     """
-    Base class for a dataset evaluator.
+    Base class for a dataset_1 evaluator.
     The function :func:`inference_on_dataset` runs the model over
-    all samples in the dataset, and have a DatasetEvaluator to process the inputs/outputs.
+    all samples in the dataset_1, and have a DatasetEvaluator to process the inputs/outputs.
     This class will accumulate information of the inputs/outputs (by :meth:`process`),
     and produce evaluation results in the end (by :meth:`evaluate`).
     """
@@ -97,7 +97,7 @@ def inference_on_dataset(model, data_loader, evaluator, flip_test=False):
         The return value of `evaluator.evaluate()`
     """
     logger = logging.getLogger(__name__)
-    logger.info("Start inference on {} images".format(len(data_loader.dataset)))
+    logger.info("Start inference on {} images".format(len(data_loader.dataset_1)))
 
     total = len(data_loader)  # inference data loader must have a fixed length
     evaluator.reset()

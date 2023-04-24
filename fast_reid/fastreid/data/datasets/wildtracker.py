@@ -23,7 +23,7 @@ class WildTrackCrop(ImageDataset):
         - images: 33979 (train only)
         - cameras: 7
     Args:
-        data_path(str): path to WildTrackCrop dataset
+        data_path(str): path to WildTrackCrop dataset_1
         combineall(bool): combine train and test sets as train set if True
     """
     dataset_url = None
