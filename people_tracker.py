@@ -28,7 +28,22 @@ from pycallgraph2.output import GraphvizOutput
 
 
 class VideoStreamTracker():
-    def __init__(self, yolo_model, deepsort_model, dataset, query_feat, is_display=True):
+    def __init__(self, yolo_model,
+                 deepsort_model,
+                 dataset,
+                 query_feat,
+                 query_names,
+                 output_people_img_path,
+                 is_display, p1, p2, tracker_type_number=-1):
+        '''
+        todo: 默认参数：query_feat - None, query_names - [],  is_display - True
+        parameters:
+            query_feat : reid使用的查询库的特征
+            output_people_img_path : 将提取出的人物图像放在什么路径下
+            is_display : 是否展示视频
+            p1, p2 : 黄线的两个端点占画面的比例（0-1之间），用列表的形式传递
+            tracker_type_number : 0代表入口摄像头， 1代表出口摄像头， 其他数字代表店内摄像头
+        '''
         self.idx_frame = 0
         self.total_track = 0
         self.total_counter = 0
@@ -38,13 +53,15 @@ class VideoStreamTracker():
         self.yolo_model = yolo_model
         self.deepsort = deepsort_model
         self.dataset = dataset
+        self.tracker_type_number = tracker_type_number
         # 1.画黄线
-        self.p1_ratio = [0.31, 0.50]
-        self.p2_ratio = [0.36, 0.84]
+        self.p1_ratio = p1
+        self.p2_ratio = p2
         # 2.处理tracks
-        self.output_people_img_path = ''
+        self.output_people_img_path = output_people_img_path
         # 3.ReID
         self.query_feat = query_feat
+        self.query_names = query_names
         # 4.绘制统计信息 & 绘制检测框 & 绘制帧数
         # 5.展示图像，输出结果视频
         self.is_display = is_display
@@ -54,7 +71,6 @@ class VideoStreamTracker():
         paths = {}  # 每一个track的行动轨迹
         last_track_id = -1
         angle = -1
-
         already_counted = deque(maxlen=100)  # temporary memory for storing counted IDs
 
         for video_path, img, ori_img, vid_cap in self.dataset:  # 获取视频帧
@@ -66,7 +82,7 @@ class VideoStreamTracker():
             outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)  # TODO: 路径问题，一定要放在test_video下才可以
 
             # 1.画黄线
-            yellow_line_in = draw_yellow_line(self.p1_ratio, self.p2_ratio, ori_img)
+            yellow_line = draw_yellow_line(self.p1_ratio, self.p2_ratio, ori_img)
 
             # 2. 处理tracks
             for track in outputs:
@@ -82,22 +98,26 @@ class VideoStreamTracker():
                 midpoint_0 = paths[track_id][0]  # 此track前一帧的midpoint
                 origin_previous_midpoint = (midpoint_0[0], ori_img.shape[0] - midpoint_0[1])
 
-                if intersect(midpoint_1, midpoint_0, yellow_line_in[0], yellow_line_in[1]) \
+                if intersect(midpoint_1, midpoint_0, yellow_line[0], yellow_line[1]) \
                         and track_id not in already_counted:
                     self.total_counter += 1
                     last_track_id = track_id;  # 记录触线者的ID
-                    cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
+                    cv2.line(ori_img, yellow_line[0], yellow_line[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
                     already_counted.append(track_id)  # Set already counted for ID to true.
                     angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
                     if angle > 0:  # 进店
                         self.up_count += 1
-                        self.customer_first_enter(bbox, ori_img, track_id, yellow_line_in)
+                        self.customer_first_enter(bbox, ori_img, track_id, yellow_line)
                     if angle < 0:
                         self.down_count += 1
+
             # 3.重识别结果 - Enter不需要管这个
-            self.draw_reid_result_to_frame()
+            if self.tracker_type_number != 0:
+                # self.method_1(features, ori_img, xy)
+                img, match_names = self.draw_reid_result_to_frame(features, ori_img, xy)
+
             # 4.绘制统计信息
-            self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, total_track)
+            ori_img = self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, self.total_track)
             # 5.展示图像，todo:输出结果视频
             if self.is_display:
                 cv2.imshow("test", ori_img)
@@ -119,13 +139,23 @@ class VideoStreamTracker():
                               )
         cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
 
+    # def method_1(self, features, ori_img, xy):
+    #     person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
+    #     max_idx = np.argmax(person_cossim, axis=1)
+    #     maximum = np.max(person_cossim, axis=1)
+    #     max_idx[maximum < 0.5] = -1
+    #     score = maximum
+    #     reid_results = max_idx
+    #     img, match_names = draw_reid_person(ori_img, xy, reid_results, self.query_names)  # draw_person name
+    #     print("[ReID] match people names: {} .".format(match_names))
+
     def customer_first_enter(self, bbox, ori_img, track_id, yellow_line_in):
         # todo: 把撞线人的特征抠出来
 
         # 进店的时候，把人物的图像抠出来
         cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        path = str('./runs/reid_output/enter/track_id-{}.jpg'.format(track_id))
+        path = str(self.output_people_img_path + 'track_id-{}.jpg'.format(track_id))
         makedir(path)
         cv2.imwrite(path, ROI_person)
         # 打印当前的时间 & 顾客入店信息
@@ -150,6 +180,19 @@ class VideoStreamTracker():
             draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
             for bb_xyxy in bbox_xyxy:
                 bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
+        return ori_img
 
-    def draw_reid_result_to_frame(self):
-        pass
+    def draw_reid_result_to_frame(self, features, ori_img, xy):
+        person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
+        max_idx = np.argmax(person_cossim, axis=1)
+        maximum = np.max(person_cossim, axis=1)
+        max_idx[maximum < 0.5] = -1
+        score = maximum
+        reid_results = max_idx
+        img, match_names = draw_reid_person(ori_img, xy, reid_results, self.query_names)  # draw_person name
+        print("[ReID] match people names: {} .".format(match_names))
+        return img, match_names
+
+    def update_query_features_and_names(self, features, names):
+        self.query_feat = features
+        self.query_names = names
