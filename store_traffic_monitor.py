@@ -70,7 +70,7 @@ class TrafficMonitor():
         self.logger.info("args: ", self.args)
 
     def demo(self):
-        self.enter_cam()  # enter store
+        # self.enter_cam()  # enter store
         self.feature_extract()  # extract features of customers, who entered
         self.exit_cam()  # exit store
 
@@ -141,18 +141,19 @@ class TrafficMonitor():
                 if len(paths) > 100: # TODO: 50写到常量中
                     del paths[list(paths)[0]]
 
-            # 4. 绘制统计信息（出入商店的人数） & 绘制检测框
-            ori_img = self.print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count)
+            # 4. 绘制统计信息（出入商店的人数） & 绘制检测框 todo: 函数放到别的文件里
+            ori_img = self.print_statistics_to_frame(ori_img, total_counter, total_track, up_count)
             if last_track_id >= 0:
-                ori_img = self.print_newest_info(angle, last_track_id, ori_img)
-            if len(outputs) > 0:
+                ori_img = self.print_newest_info(angle, last_track_id, ori_img) # 打印撞线人的信息
+            if len(outputs) > 0: # 展示跟踪结果
                 bbox_tlwh = []
                 bbox_xyxy = outputs[:, :4]
                 identities = outputs[:, -1]
-                ori_im = draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框 todo: 不需要输出
+                draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
                 for bb_xyxy in bbox_xyxy:
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
             end_time = time_synchronized()
+
             # 5. 展示处理后的图像
             if self.args.display:
                 cv2.imshow("test", ori_img)
@@ -224,8 +225,8 @@ class TrafficMonitor():
 
             # 1. 画黄线
             # yellow_line_out = self.draw_yellow_line_out(ori_img)
-            p2 = [1500, 450]
-            p1 = [1700, 1000]
+            p1 = [0.52, 0.51]
+            p2 = [0.52, 0.93]
             yellow_line_out = draw_yellow_line(p1, p2, ori_img)
 
             # 2. 统计人数
@@ -251,29 +252,32 @@ class TrafficMonitor():
                     angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
                     if angle > 0: # 入店
                         up_count += 1
-                    if angle < 0: # 出店
                         # TODO：进行query的比对！
 
-                        down_count += 1
+
                         # 出店的时候，把人物的图像抠出来------------- TODO: 该名称应该表示为入店时分配的ID
                         cv2.line(ori_img, yellow_line_out[0], yellow_line_out[1], (0, 0, 0), 1)  # 消除线条
                         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-                        path = str('./runs/reid_output/exit/track_id-{}.jpg'.format(track_id))
+                        path = str('./runs/reid_output/in_2/track_id-{}.jpg'.format(track_id))
                         makedir(path)
                         cv2.imwrite(path, ROI_person)
                         # 打印当前的时间 & 顾客入店信息
                         current_time = int(time.time())
                         localtime = time.localtime(current_time)
                         dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-                        print("[Customer gone🍃] current customer💂‍♂️: {}, "
+                        print("[Customer in🍃] current customer💂‍♂️: {}, "
                               "Exit time⏰ : {}".format(
                             track_id
                             , dt
                         ))
+                    if angle < 0: # 出店
+                        down_count += 1
+
 
                 if len(paths) > 100:
                     del paths[list(paths)[0]]
-            # 3. 绘制人员
+
+            # 3. reid 绘制重识别的结果
             person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
             max_idx = np.argmax(person_cossim, axis=1)
             maximum = np.max(person_cossim, axis=1)
@@ -281,8 +285,10 @@ class TrafficMonitor():
             score = maximum
             reid_results = max_idx
             draw_person(ori_img, xy, reid_results, self.names)  # draw_person name
+
+
             # 4. 绘制统计信息
-            ori_img = self.print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count)
+            ori_img = self.print_statistics_to_frame(ori_img, total_counter, total_track, up_count)
             if last_track_id >= 0:
                 ori_img = self.print_newest_info(angle, last_track_id, ori_img)
             if len(outputs) > 0: # 只打印检测的框，
@@ -297,22 +303,24 @@ class TrafficMonitor():
                 cv2.imshow("Out camera", ori_img)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
-        end_time = time_synchronized()
-        self.logger.info("Index of frame: {} / "
-                         "One Image spend time: {:.03f}s, "
-                         "fps: {:.03f}, "
-                         "tracks : {}, "
-                         "detections : {}, "
-                         "features of detections: {}"
-                         .format(idx_frame
-                                 , end_time - start_time
-                                 , 1 / (end_time - start_time)
-                                 , bbox_xywh.shape[0]
-                                 , len(outputs)
-                                 , len(bbox_xywh)
-                                 , features.shape
-                                 )
-                         )
+            # 5. 展示处理后的图像
+            end_time = time_synchronized()
+            self.logger.info("Index of frame: {} / "
+                             "One Image spend time: {:.03f}s, "
+                             "fps: {:.03f}, "
+                             "tracks : {}, "
+                             "detections : {}, "
+                             "features of detections: {}"
+                             .format(idx_frame
+                                     , end_time - start_time
+                                     , 1 / (end_time - start_time)
+                                     , bbox_xywh.shape[0]
+                                     , len(outputs)
+                                     , len(bbox_xywh)
+                                     , features.shape
+                                     )
+                             )
+
         cv2.destroyAllWindows()
 
     # *********************************************************************************************
@@ -330,7 +338,7 @@ class TrafficMonitor():
         cv2.line(ori_img, line[0], line[1], (0, 255, 255), 1)
         return line
 
-    def print_statistics_to_frame(self, down_count, ori_img, total_counter, total_track, up_count):
+    def print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count):
         label = "TOTAL: {} people cross the yellow line. ({} IN, {} OUT.)".format(str(total_counter), str(up_count), str(down_count))
         t_size = get_size_with_pil(label, 15)  # 原：25
         x1 = 20
