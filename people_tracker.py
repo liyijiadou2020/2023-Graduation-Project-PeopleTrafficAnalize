@@ -51,6 +51,7 @@ class VideoStreamTracker():
         # 6.销毁窗口 & 打印log
 
     def process_frame(self):
+        print("HERE!")
         paths = {}  # 每一个track的行动轨迹
         last_track_id = -1
         angle = -1
@@ -97,7 +98,7 @@ class VideoStreamTracker():
             # 3.重识别结果 - Enter不需要管这个
             self.draw_reid_result_to_frame()
             # 4.绘制统计信息
-            self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, total_track)
+            ori_img = self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, self.total_track)
             # 5.展示图像，todo:输出结果视频
             if self.is_display:
                 cv2.imshow("test", ori_img)
@@ -150,6 +151,7 @@ class VideoStreamTracker():
             draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
             for bb_xyxy in bbox_xyxy:
                 bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
+        return ori_img
 
     def draw_reid_result_to_frame(self):
         pass

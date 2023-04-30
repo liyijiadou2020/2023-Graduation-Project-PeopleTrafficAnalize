@@ -19,9 +19,10 @@ from utils.log import get_logger
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 from sklearn.metrics.pairwise import cosine_similarity
 from fast_reid.demo.person_bank import Reid_feature
-
 from pycallgraph2 import PyCallGraph
 from pycallgraph2.output import GraphvizOutput
+
+from people_tracker import VideoStreamTracker
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -57,28 +58,29 @@ class TrafficMonitor():
     def __init__(self, cfg, args, path_in, path_out):
         self._logger = get_logger("root")
         self.args = args
-        # self.video_in_path = path_in
-        # self.video_in2_path = path_out
         use_cuda = args.use_cuda and torch.cuda.is_available()
         if not use_cuda:
             warnings.warn("Running in cpu mode which maybe very slow!", UserWarning)
         self.yolo_model = YoloPersonDetect(self.args)
         self.deepsort = build_tracker(cfg, args.sort, use_cuda=use_cuda)         # Deepsort with ReID
         imgsz = check_img_size(args.img_size, s=32)  # check img_size
-        # self.dataset_1 = LoadImages(self.video_in_path, img_size=imgsz)
-        # self.dataset_2 = LoadImages(self.video_in2_path, img_size=imgsz)
         self.dataset_1 = LoadImages(path_in, img_size=imgsz)    # Read video frame
         self.dataset_2 = LoadImages(path_out, img_size=imgsz)
-
         self.query_names = []
-        # self.query_feat =
 
-        self._logger.info("args: ", self.args)
+        # >>>>>> 新功能：Tracker
+        self.enter_cam_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_1, None)
+        # <<<<<<<<
+
+        # self._logger.info("args: ", self.args)
 
     def demo(self):
-        self.enter_cam()  # enter store
-        self.feature_extract()  # extract features of customers, who entered
-        self.exit_cam()  # exit store
+        # self.enter_cam()  # enter store
+
+        self.enter_cam_tracker.process_frame() # OK!
+
+        # self.feature_extract()  # extract features of customers, who entered
+        # self.exit_cam()  # exit store
 
     def enter_cam(self):
         idx_frame = 0
@@ -343,15 +345,6 @@ class TrafficMonitor():
 
 # ********************************************************
 if __name__ == '__main__':
-    # graphviz = GraphvizOutput()
-    # graphviz.output_file = 'hierachy.png'
-    #
-    # with PyCallGraph(output=graphviz): # hierarchy graph
-    # --< main function
-    #     main()
-    # -->
-    # print("[INFO] Finish output graphviz photo.")
-
     # initialize parameters
     args = parse_args()
 
