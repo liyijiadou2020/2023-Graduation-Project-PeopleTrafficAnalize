@@ -71,8 +71,13 @@ class TrafficMonitor():
         # >>>>>> 新功能：Tracker
         p1 = [0.31, 0.50]
         p2 = [0.36, 0.84]
-        self.enter_cam_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_1, None,
-                                                    './runs/reid_output/enter/', True, p1, p2)
+        self.enter_cam_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_1, None, [],
+                                                    './runs/reid_output/enter/', True, p1, p2, 0)
+
+        p1_out = [0.52, 0.51]
+        p2_out = [0.52, 0.93]
+        self.in2_cam_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_2, None, [],
+                                                    './runs/reid_output/in_2/', True, p1_out, p2_out, 3)
         # <<<<<<<<
 
         # self._logger.info("args: ", self.args)
@@ -80,113 +85,118 @@ class TrafficMonitor():
     def demo(self):
         # self.enter_cam()  # enter store
 
-        self.enter_cam_tracker.process_frame() # OK!
+        # self.enter_cam_tracker.process_frame()
         self.feature_extract()  # TODO: 路径变量化
+
+        # todo: 可以把所有Tracker放在一个列表中，同步更新所有的 query_feat和query_names
+        #  remember before starting process_frame you need to update query_feat and query_names
+        self.in2_cam_tracker.update_query_features_and_names(self.query_feat, self.query_names)
+        self.in2_cam_tracker.process_frame() # ok!
         # self.exit_cam()  # exit store
 
-    def enter_cam(self):
-        idx_frame = 0
-        paths = {} # 每一个track的行动轨迹
-        last_track_id = -1
-        total_track = 0
-        angle = -1
-        total_counter = 0
-        up_count = 0
-        down_count = 0
-        already_counted = deque(maxlen=100)  # temporary memory for storing counted IDs
-        for video_path, img, ori_img, vid_cap in self.dataset_1: # 获取视频帧
-            idx_frame += 1
-            start_time = time_synchronized()
-            # yolo detection
-            bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model.detect(video_path, img, ori_img, vid_cap)
-            # do tracking # features: reid模型输出512dim特征
-            outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img) # TODO: 路径问题，一定要放在test_video下才可以
-            # 1. 画黄线 ok!
-            p1_ratio = [0.31, 0.50]
-            p2_ratio = [0.36, 0.84]
-            yellow_line_in = draw_yellow_line(p1_ratio, p2_ratio, ori_img)
-
-            # 2. 处理tracks
-            for track in outputs:
-                bbox = track[:4]
-                track_id = track[-1]
-                midpoint_1 = tlbr_midpoint(bbox) # TODO: 简化撞线计算
-                origin_midpoint = (midpoint_1[0],
-                                   ori_img.shape[0] - midpoint_1[1])  # get midpoint_1 respective to bottom-left
-                if track_id not in paths:
-                    paths[track_id] = deque(maxlen=2)  # path保存了每个track的两个帧的midpoint（运动轨迹）
-                    total_track = track_id
-                paths[track_id].append(midpoint_1)
-                midpoint_0 = paths[track_id][0]  # 此track前一帧的midpoint
-                origin_previous_midpoint = (midpoint_0[0], ori_img.shape[0] - midpoint_0[1])
-
-                if intersect(midpoint_1, midpoint_0, yellow_line_in[0], yellow_line_in[1]) \
-                        and track_id not in already_counted:
-                    total_counter += 1
-                    last_track_id = track_id;  # 记录触线者的ID
-                    cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
-                    already_counted.append(track_id)  # Set already counted for ID to true.
-                    angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
-                    if angle > 0:  # 进店
-                        # todo: 把撞线人的特征抠出来
-
-                        up_count += 1
-                        # 进店的时候，把人物的图像抠出来
-                        cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
-                        ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-                        path = str('./runs/reid_output/enter/track_id-{}.jpg'.format(track_id))
-                        makedir(path)
-                        cv2.imwrite(path, ROI_person)
-                        # 打印当前的时间 & 顾客入店信息
-                        current_time = int(time.time())
-                        localtime = time.localtime(current_time)
-                        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-                        print("[Customer came👏] current customer💂‍♂️: {}, "
-                              "Enter time⏰ : {}".format(
-                            track_id
-                            , dt
-                        ))
-                    if angle < 0:
-                        down_count += 1
-
-                if len(paths) > 100: # TODO: 50写到常量中
-                    del paths[list(paths)[0]]
-
-            # 4. 绘制统计信息（出入商店的人数） & 绘制检测框  & todo: 向帧中打印frame_id
-            ori_img = print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count)
-            ori_img = draw_idx_frame(ori_img, idx_frame)
-            if last_track_id >= 0:
-                ori_img = print_newest_info(angle, last_track_id, ori_img)  # 打印撞线人的信息
-            if len(outputs) > 0: # 展示跟踪结果
-                bbox_tlwh = []
-                bbox_xyxy = outputs[:, :4]
-                identities = outputs[:, -1]
-                draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
-                for bb_xyxy in bbox_xyxy:
-                    bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
-            end_time = time_synchronized()
-            self._logger.info("Index of frame: {} / "
-                              "One Image spend time: {:.03f}s, "
-                              "fps: {:.03f}, "
-                              "tracks : {}, "
-                              "detections : {}, "
-                              "features of detections: {}"
-                              .format(idx_frame, end_time - start_time, 1 / (end_time - start_time)
-                                      , bbox_xywh.shape[0]
-                                      , len(outputs)
-                                      , len(bbox_xywh)
-                                      , features.shape
-                                      )
-                              )
-
-            # 5. 展示处理后的图像 & todo: 输出结果视频
-            if self.args.display:
-                cv2.imshow("test", ori_img)
-                if cv2.waitKey(1) & 0xFF == 27:
-                    break
-
-        cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
-        return idx_frame
+    # def enter_cam(self):
+    #     idx_frame = 0
+    #     paths = {} # 每一个track的行动轨迹
+    #     last_track_id = -1
+    #     total_track = 0
+    #     angle = -1
+    #     total_counter = 0
+    #     up_count = 0
+    #     down_count = 0
+    #     already_counted = deque(maxlen=100)  # temporary memory for storing counted IDs
+    #     for video_path, img, ori_img, vid_cap in self.dataset_1: # 获取视频帧
+    #         idx_frame += 1
+    #         start_time = time_synchronized()
+    #         # yolo detection
+    #         bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model.detect(video_path, img, ori_img, vid_cap)
+    #         # do tracking # features: reid模型输出512dim特征
+    #         outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img) # TODO: 路径问题，一定要放在test_video下才可以
+    #         # 1. 画黄线 ok!
+    #         p1_ratio = [0.31, 0.50]
+    #         p2_ratio = [0.36, 0.84]
+    #         yellow_line_in = draw_yellow_line(p1_ratio, p2_ratio, ori_img)
+    #
+    #         # 2. 处理tracks
+    #         for track in outputs:
+    #             bbox = track[:4]
+    #             track_id = track[-1]
+    #             midpoint_1 = tlbr_midpoint(bbox) # TODO: 简化撞线计算
+    #             origin_midpoint = (midpoint_1[0],
+    #                                ori_img.shape[0] - midpoint_1[1])  # get midpoint_1 respective to bottom-left
+    #             if track_id not in paths:
+    #                 paths[track_id] = deque(maxlen=2)  # path保存了每个track的两个帧的midpoint（运动轨迹）
+    #                 total_track = track_id
+    #             paths[track_id].append(midpoint_1)
+    #             midpoint_0 = paths[track_id][0]  # 此track前一帧的midpoint
+    #             origin_previous_midpoint = (midpoint_0[0], ori_img.shape[0] - midpoint_0[1])
+    #
+    #             if intersect(midpoint_1, midpoint_0, yellow_line_in[0], yellow_line_in[1]) \
+    #                     and track_id not in already_counted:
+    #                 total_counter += 1
+    #                 last_track_id = track_id;  # 记录触线者的ID
+    #                 cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
+    #                 already_counted.append(track_id)  # Set already counted for ID to true.
+    #                 angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
+    #                 if angle > 0:  # 进店
+    #                     # todo: 把撞线人的特征抠出来
+    #
+    #                     up_count += 1
+    #                     # 进店的时候，把人物的图像抠出来
+    #                     cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
+    #                     ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
+    #                     path = str('./runs/reid_output/enter/track_id-{}.jpg'.format(track_id))
+    #                     makedir(path)
+    #                     cv2.imwrite(path, ROI_person)
+    #                     # 打印当前的时间 & 顾客入店信息
+    #                     current_time = int(time.time())
+    #                     localtime = time.localtime(current_time)
+    #                     dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+    #                     print("[Customer came👏] current customer💂‍♂️: {}, "
+    #                           "Enter time⏰ : {}".format(
+    #                         track_id
+    #                         , dt
+    #                     ))
+    #                 if angle < 0:
+    #                     down_count += 1
+    #
+    #             if len(paths) > 100: # TODO: 50写到常量中
+    #                 del paths[list(paths)[0]]
+    #
+    #         # 4. 绘制统计信息（出入商店的人数） & 绘制检测框  & todo: 向帧中打印frame_id
+    #         ori_img = print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count)
+    #         ori_img = draw_idx_frame(ori_img, idx_frame)
+    #         if last_track_id >= 0:
+    #             ori_img = print_newest_info(angle, last_track_id, ori_img)  # 打印撞线人的信息
+    #         if len(outputs) > 0: # 展示跟踪结果
+    #             bbox_tlwh = []
+    #             bbox_xyxy = outputs[:, :4]
+    #             identities = outputs[:, -1]
+    #             draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
+    #             for bb_xyxy in bbox_xyxy:
+    #                 bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
+    #         end_time = time_synchronized()
+    #         self._logger.info("Index of frame: {} / "
+    #                           "One Image spend time: {:.03f}s, "
+    #                           "fps: {:.03f}, "
+    #                           "tracks : {}, "
+    #                           "detections : {}, "
+    #                           "features of detections: {}"
+    #                           .format(idx_frame, end_time - start_time, 1 / (end_time - start_time)
+    #                                   , bbox_xywh.shape[0]
+    #                                   , len(outputs)
+    #                                   , len(bbox_xywh)
+    #                                   , features.shape
+    #                                   )
+    #                           )
+    #
+    #         # 5. 展示处理后的图像 & todo: 输出结果视频
+    #         if self.args.display:
+    #             cv2.imshow("test", ori_img)
+    #             if cv2.waitKey(1) & 0xFF == 27:
+    #                 break
+    #
+    #     cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
+    #     return idx_frame
 
     # 进店客户的行人特征 & 名字会存储在 'runs/query_features.npy' 和 'query/names.npy' 中
     # todo: 抽取特征和读取特征分离
