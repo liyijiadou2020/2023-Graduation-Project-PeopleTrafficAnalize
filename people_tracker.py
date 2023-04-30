@@ -28,7 +28,7 @@ from pycallgraph2.output import GraphvizOutput
 
 
 class VideoStreamTracker():
-    def __init__(self, yolo_model, deepsort_model, dataset, query_feat, is_display=True):
+    def __init__(self, yolo_model, deepsort_model, dataset, query_feat, output_people_img_path, is_display=True):
         self.idx_frame = 0
         self.total_track = 0
         self.total_counter = 0
@@ -42,7 +42,7 @@ class VideoStreamTracker():
         self.p1_ratio = [0.31, 0.50]
         self.p2_ratio = [0.36, 0.84]
         # 2.处理tracks
-        self.output_people_img_path = ''
+        self.output_people_img_path = output_people_img_path
         # 3.ReID
         self.query_feat = query_feat
         # 4.绘制统计信息 & 绘制检测框 & 绘制帧数
@@ -126,7 +126,7 @@ class VideoStreamTracker():
         # 进店的时候，把人物的图像抠出来
         cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        path = str('./runs/reid_output/enter/track_id-{}.jpg'.format(track_id))
+        path = str(self.output_people_img_path + 'track_id-{}.jpg'.format(track_id))
         makedir(path)
         cv2.imwrite(path, ROI_person)
         # 打印当前的时间 & 顾客入店信息

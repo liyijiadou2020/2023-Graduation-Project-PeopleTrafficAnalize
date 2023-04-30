@@ -69,7 +69,8 @@ class TrafficMonitor():
         self.query_names = []
 
         # >>>>>> 新功能：Tracker
-        self.enter_cam_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_1, None)
+        self.enter_cam_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_1, None,
+                                                    './runs/reid_output/enter/', True)
         # <<<<<<<<
 
         # self._logger.info("args: ", self.args)
