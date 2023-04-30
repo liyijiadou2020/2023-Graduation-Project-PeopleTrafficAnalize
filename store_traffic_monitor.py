@@ -73,6 +73,8 @@ class TrafficMonitor():
         save_dir = Path(save_dir)
         self.save_dir = save_dir
         self.save_dir_in = str(save_dir / 'in')
+        makedir(self.save_dir)
+        makedir(self.save_dir_in)
 
         p1 = [0.31, 0.50]
         p2 = [0.36, 0.84]

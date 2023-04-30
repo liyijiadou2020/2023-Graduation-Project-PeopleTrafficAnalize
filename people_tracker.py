@@ -19,7 +19,7 @@ from utils.log import get_logger
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 from sklearn.metrics.pairwise import cosine_similarity
 from fast_reid.demo.person_bank import Reid_feature
-
+from pathlib import Path
 from pycallgraph2 import PyCallGraph
 from pycallgraph2.output import GraphvizOutput
 
@@ -85,13 +85,10 @@ class VideoStreamTracker():
         #     print("[INFO] total_frame_count: ", total_frame_count)
         self.total_frame_count = total_frame_count
 
-        # ---- 输出视频 ----
-        video_name = self.result_video_path # self.result_video_path = '{}/result.avi'.format(output_people_img_path)
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        fps = 30
-        width, height = 1920, 1080
-        writer = cv2.VideoWriter(video_name, fourcc, fps, (width, height))
-        # ----------------
+        # # ---- 输出视频 ----
+        vid_path = None
+        vid_writer = None
+        # # ----------------
 
         for video_path, img, ori_img, vid_cap in self.dataset:  # 获取视频帧
             self.idx_frame += 1
@@ -146,15 +143,29 @@ class VideoStreamTracker():
             end_time = time_synchronized()
 
             if self.is_save_vid: # 输出视频
-                writer.write(ori_img)
+                if vid_path != self.output_people_img_path:
+                    vid_path = self.output_people_img_path
+                    if isinstance(vid_writer, cv2.VideoWriter):
+                        vid_writer.release()
+                    if vid_cap:  # video
+                        fps = vid_cap.get(cv2.CAP_PROP_FPS)
+                        w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                        h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    else:  # stream
+                        fps, w, h = 30, ori_img.shape[1], ori_img.shape[0]
+                    save_path = str(
+                        Path(self.output_people_img_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
+                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+                vid_writer.write(ori_img)
 
-            print("Index of frame: {} / {} "
+            print("Index of frame: {} "
                               "Spend time: {:.03f}s, "
                               "Fps: {:.03f}, "
                               "Tracks : {}, "
                               "Detections : {}, "
                               "Features of detections: {}"
-                              .format(self.idx_frame, self.total_frame_count
+                              .format(self.idx_frame
+                                      # , self.total_frame_count
                                       , end_time - start_time
                                       , 1 / (end_time - start_time)
                                       , bbox_xywh.shape[0]
@@ -164,7 +175,7 @@ class VideoStreamTracker():
                                       )
                               )
         cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
-        writer.release()
+        # vid_writer.release()
 
     def customer_first_enter(self, bbox, ori_img, track_id, yellow_line_in):
         # todo: 把撞线人的特征输出来 & 记录入店的时间
