@@ -166,27 +166,13 @@ class VideoStreamTracker():
         cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
         writer.release()
 
-    # def method_1(self, features, ori_img, xy):
-    #     person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
-    #     max_idx = np.argmax(person_cossim, axis=1)
-    #     maximum = np.max(person_cossim, axis=1)
-    #     max_idx[maximum < 0.5] = -1
-    #     score = maximum
-    #     reid_results = max_idx
-    #     img, match_names = draw_reid_person(ori_img, xy, reid_results, self.query_names)  # draw_person name
-    #     print("[ReID] match people names: {} .".format(match_names))
-
     def customer_first_enter(self, bbox, ori_img, track_id, yellow_line_in):
         # todo: 把撞线人的特征输出来 & 记录入店的时间
 
         # 进店的时候，把人物的图像抠出来
         cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-<<<<<<< HEAD
         path = str(self.output_people_img_path + '/track_id-{}.jpg'.format(track_id))
-=======
-        path = str(self.output_people_img_path + 'track_id-{}.jpg'.format(track_id))
->>>>>>> 7c52e4e4840f7cd5306616f672ca5377db147de4
         makedir(path)
         cv2.imwrite(path, ROI_person)
         # 打印当前的时间 & 顾客入店信息
@@ -224,10 +210,6 @@ class VideoStreamTracker():
         print("[ReID] match people names: {} .".format(match_names))
         return img, match_names
 
-<<<<<<< HEAD
     def update_reid_query(self, features, names):
-=======
-    def update_query_features_and_names(self, features, names):
->>>>>>> 7c52e4e4840f7cd5306616f672ca5377db147de4
         self.query_feat = features
         self.query_names = names
