@@ -28,7 +28,12 @@ from pycallgraph2.output import GraphvizOutput
 
 
 class VideoStreamTracker():
-    def __init__(self, yolo_model, deepsort_model, dataset, query_feat, output_people_img_path, is_display=True):
+    def __init__(self, yolo_model,
+                 deepsort_model,
+                 dataset,
+                 query_feat,
+                 output_people_img_path,
+                 is_display, p1, p2):
         self.idx_frame = 0
         self.total_track = 0
         self.total_counter = 0
@@ -39,8 +44,8 @@ class VideoStreamTracker():
         self.deepsort = deepsort_model
         self.dataset = dataset
         # 1.画黄线
-        self.p1_ratio = [0.31, 0.50]
-        self.p2_ratio = [0.36, 0.84]
+        self.p1_ratio = p1
+        self.p2_ratio = p2
         # 2.处理tracks
         self.output_people_img_path = output_people_img_path
         # 3.ReID

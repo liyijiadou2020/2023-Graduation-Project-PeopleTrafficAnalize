@@ -69,8 +69,10 @@ class TrafficMonitor():
         self.query_names = []
 
         # >>>>>> 新功能：Tracker
+        p1 = [0.31, 0.50]
+        p2 = [0.36, 0.84]
         self.enter_cam_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_1, None,
-                                                    './runs/reid_output/enter/', True)
+                                                    './runs/reid_output/enter/', True, p1, p2)
         # <<<<<<<<
 
         # self._logger.info("args: ", self.args)
@@ -79,8 +81,7 @@ class TrafficMonitor():
         # self.enter_cam()  # enter store
 
         self.enter_cam_tracker.process_frame() # OK!
-
-        # self.feature_extract()  # extract features of customers, who entered
+        self.feature_extract()  # TODO: 路径变量化
         # self.exit_cam()  # exit store
 
     def enter_cam(self):
