@@ -7,7 +7,8 @@ import torch
 import warnings
 import argparse
 from person_count import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
-    put_text_to_cv2_img_with_pil, draw_yellow_line, makedir, print_statistics_to_frame, print_newest_info
+    put_text_to_cv2_img_with_pil, draw_yellow_line, makedir, print_statistics_to_frame, print_newest_info, \
+    draw_idx_frame
 from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
 from utils.general import check_img_size
@@ -69,7 +70,6 @@ class TrafficMonitor():
         self.dataset_1 = LoadImages(path_in, img_size=imgsz)    # Read video frame
         self.dataset_2 = LoadImages(path_out, img_size=imgsz)
 
-
         self.query_names = []
         # self.query_feat =
 
@@ -89,7 +89,7 @@ class TrafficMonitor():
         total_counter = 0
         up_count = 0
         down_count = 0
-        already_counted = deque(maxlen=50)  # temporary memory for storing counted IDs
+        already_counted = deque(maxlen=100)  # temporary memory for storing counted IDs
         for video_path, img, ori_img, vid_cap in self.dataset_1: # 获取视频帧
             idx_frame += 1
             start_time = time_synchronized()
@@ -148,8 +148,9 @@ class TrafficMonitor():
                 if len(paths) > 100: # TODO: 50写到常量中
                     del paths[list(paths)[0]]
 
-            # 4. 绘制统计信息（出入商店的人数） & 绘制检测框 todo: 函数放到别的文件里
+            # 4. 绘制统计信息（出入商店的人数） & 绘制检测框  & todo: 向帧中打印frame_id
             ori_img = print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count)
+            ori_img = draw_idx_frame(ori_img, idx_frame)
             if last_track_id >= 0:
                 ori_img = print_newest_info(angle, last_track_id, ori_img)  # 打印撞线人的信息
             if len(outputs) > 0: # 展示跟踪结果
@@ -160,25 +161,26 @@ class TrafficMonitor():
                 for bb_xyxy in bbox_xyxy:
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
             end_time = time_synchronized()
+            self._logger.info("Index of frame: {} / "
+                              "One Image spend time: {:.03f}s, "
+                              "fps: {:.03f}, "
+                              "tracks : {}, "
+                              "detections : {}, "
+                              "features of detections: {}"
+                              .format(idx_frame, end_time - start_time, 1 / (end_time - start_time)
+                                      , bbox_xywh.shape[0]
+                                      , len(outputs)
+                                      , len(bbox_xywh)
+                                      , features.shape
+                                      )
+                              )
 
-            # 5. 展示处理后的图像
+            # 5. 展示处理后的图像 & todo: 输出结果视频
             if self.args.display:
                 cv2.imshow("test", ori_img)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
-            self._logger.info("Index of frame: {} / "
-                             "One Image spend time: {:.03f}s, "
-                             "fps: {:.03f}, "
-                             "tracks : {}, "
-                             "detections : {}, "
-                             "features of detections: {}"
-                              .format(idx_frame, end_time - start_time, 1 / (end_time - start_time)
-                                     , bbox_xywh.shape[0]
-                                     , len(outputs)
-                                     , len(bbox_xywh)
-                                     , features.shape
-                                     )
-                              )
+
         cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
         return idx_frame
 
@@ -221,7 +223,7 @@ class TrafficMonitor():
         total_counter = 0
         up_count = 0
         down_count = 0
-        already_counted = deque(maxlen=50)  # temporary memory for storing counted IDs
+        already_counted = deque(maxlen=100)  # temporary memory for storing counted IDs
         for video_path, img, ori_img, vid_cap in self.dataset_2:
             idx_frame += 1
             start_time = time_synchronized()
@@ -242,7 +244,7 @@ class TrafficMonitor():
             person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
             max_idx = np.argmax(person_cossim, axis=1)
             maximum = np.max(person_cossim, axis=1)
-            max_idx[maximum < 0.6] = -1
+            max_idx[maximum < 0.5] = -1
             score = maximum
             reid_results = max_idx
             img, match_names = draw_reid_person(ori_img, xy, reid_results, self.query_names)  # draw_person name
@@ -302,6 +304,7 @@ class TrafficMonitor():
 
             # 4. 绘制统计信息 & 画bbox & 展示处理后的图像
             ori_img = print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count)
+            ori_img = draw_idx_frame(ori_img, idx_frame)
             if last_track_id >= 0:
                 ori_img = print_newest_info(angle, last_track_id, ori_img)
             if len(outputs) > 0: # 只打印检测的框，
@@ -356,7 +359,6 @@ if __name__ == '__main__':
     cfg = get_config()
     cfg.merge_from_file(args.config_deepsort)
 
-    #
     monitor = TrafficMonitor(cfg, args, path_in=args.video_path, path_out=args.video_out_path)
     with torch.no_grad():
         monitor.demo()

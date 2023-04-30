@@ -61,6 +61,15 @@ def print_statistics_to_frame(down_count, ori_img, total_counter, total_track, u
     ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
     return ori_img
 
+def draw_idx_frame(ori_img, idx_frame):
+    label = "Frames: {}".format(idx_frame)
+    t_size = get_size_with_pil(label, 15)  # 原：25
+    x1 = 20
+    y1 = 50
+    color = compute_color_for_labels(3)
+    ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
+    return ori_img
+
 def print_newest_info(angle, last_track_id, ori_img):
     current_time = int(time.time())
     localtime = time.localtime(current_time)
@@ -120,7 +129,7 @@ def get_color(c, x, max):
     r = (1 - ratio) * colors[i][c] + ratio * colors[j][c];
     return r;
 
-def compute_color_for_labels(class_id,class_total=80):
+def compute_color_for_labels(class_id, class_total=80):
     offset = (class_id + 0) * 123457 % class_total;
     red = get_color(2, offset, class_total);
     green = get_color(1, offset, class_total);
