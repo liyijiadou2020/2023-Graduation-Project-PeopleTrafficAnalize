@@ -271,7 +271,7 @@ def train(hyp, opt, device, tb_writer=None):
                 if rank != -1:
                     loss *= opt.world_size  # gradient averaged between devices in DDP mode
                 # if not torch.isfinite(loss):
-                #     logger.info('WARNING: non-finite loss, ending training ', loss_items)
+                #     _logger.info('WARNING: non-finite loss, ending training ', loss_items)
                 #     return results
 
             # Backward

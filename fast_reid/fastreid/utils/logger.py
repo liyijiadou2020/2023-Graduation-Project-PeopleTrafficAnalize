@@ -38,7 +38,7 @@ def setup_logger(
         output (str): a file name or a directory to save log. If None, will not save log file.
             If ends with ".txt" or ".log", assumed to be a file name.
             Otherwise, logs will be saved to `output/log.txt`.
-        name (str): the root module name of this logger
+        name (str): the root module name of this _logger
         abbrev_name (str): an abbreviation of the module, to avoid long names in logs.
             Set to "" to not log the root module in logs.
             By default, will abbreviate "detectron2" to "d2" and leave other
@@ -111,7 +111,7 @@ def _find_caller():
     frame = sys._getframe(2)
     while frame:
         code = frame.f_code
-        if os.path.join("utils", "logger.") not in code.co_filename:
+        if os.path.join("utils", "_logger.") not in code.co_filename:
             mod_name = frame.f_globals["__name__"]
             if mod_name == "__main__":
                 mod_name = "detectron2"
@@ -130,7 +130,7 @@ def log_first_n(lvl, msg, n=1, *, name=None, key="caller"):
         lvl (int): the logging level
         msg (str):
         n (int):
-        name (str): name of the logger to use. Will use the caller's module by default.
+        name (str): name of the _logger to use. Will use the caller's module by default.
         key (str or tuple[str]): the string(s) can be one of "caller" or
             "message", which defines how to identify duplicated logs.
             For example, if called with `n=1, key="caller"`, this function
@@ -164,7 +164,7 @@ def log_every_n(lvl, msg, n=1, *, name=None):
         lvl (int): the logging level
         msg (str):
         n (int):
-        name (str): name of the logger to use. Will use the caller's module by default.
+        name (str): name of the _logger to use. Will use the caller's module by default.
     """
     caller_module, key = _find_caller()
     _LOG_COUNTER[key] += 1
@@ -179,7 +179,7 @@ def log_every_n_seconds(lvl, msg, n=1, *, name=None):
         lvl (int): the logging level
         msg (str):
         n (int):
-        name (str): name of the logger to use. Will use the caller's module by default.
+        name (str): name of the _logger to use. Will use the caller's module by default.
     """
     caller_module, key = _find_caller()
     last_logged = _LOG_TIMER.get(key, None)

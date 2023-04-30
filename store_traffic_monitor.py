@@ -7,7 +7,7 @@ import torch
 import warnings
 import argparse
 from person_count import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
-    put_text_to_cv2_img_with_pil, draw_yellow_line, makedir
+    put_text_to_cv2_img_with_pil, draw_yellow_line, makedir, print_statistics_to_frame, print_newest_info
 from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
 from utils.general import check_img_size
@@ -54,23 +54,29 @@ def parse_args():
 
 class TrafficMonitor():
     def __init__(self, cfg, args, path_in, path_out):
-        self.logger = get_logger("root")
+        self._logger = get_logger("root")
         self.args = args
-        self.video_in_path = path_in
-        self.video_path_out = path_out
+        # self.video_in_path = path_in
+        # self.video_in2_path = path_out
         use_cuda = args.use_cuda and torch.cuda.is_available()
         if not use_cuda:
             warnings.warn("Running in cpu mode which maybe very slow!", UserWarning)
         self.yolo_model = YoloPersonDetect(self.args)
         self.deepsort = build_tracker(cfg, args.sort, use_cuda=use_cuda)         # Deepsort with ReID
         imgsz = check_img_size(args.img_size, s=32)  # check img_size
-        self.dataset_1 = LoadImages(self.video_in_path, img_size=imgsz)         # Read video frame
-        self.dataset_2 = LoadImages(self.video_path_out, img_size=imgsz)
+        # self.dataset_1 = LoadImages(self.video_in_path, img_size=imgsz)
+        # self.dataset_2 = LoadImages(self.video_in2_path, img_size=imgsz)
+        self.dataset_1 = LoadImages(path_in, img_size=imgsz)    # Read video frame
+        self.dataset_2 = LoadImages(path_out, img_size=imgsz)
 
-        self.logger.info("args: ", self.args)
+
+        self.query_names = []
+        # self.query_feat =
+
+        self._logger.info("args: ", self.args)
 
     def demo(self):
-        # self.enter_cam()  # enter store
+        self.enter_cam()  # enter store
         self.feature_extract()  # extract features of customers, who entered
         self.exit_cam()  # exit store
 
@@ -84,7 +90,6 @@ class TrafficMonitor():
         up_count = 0
         down_count = 0
         already_counted = deque(maxlen=50)  # temporary memory for storing counted IDs
-        # ------------------ 入店逻辑：截取客户的图像 & 转化成特征向量 -----------------------
         for video_path, img, ori_img, vid_cap in self.dataset_1: # 获取视频帧
             idx_frame += 1
             start_time = time_synchronized()
@@ -97,7 +102,7 @@ class TrafficMonitor():
             p2_ratio = [0.36, 0.84]
             yellow_line_in = draw_yellow_line(p1_ratio, p2_ratio, ori_img)
 
-            # 2. 统计人数
+            # 2. 处理tracks
             for track in outputs:
                 bbox = track[:4]
                 track_id = track[-1]
@@ -119,6 +124,8 @@ class TrafficMonitor():
                     already_counted.append(track_id)  # Set already counted for ID to true.
                     angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
                     if angle > 0:  # 进店
+                        # todo: 把撞线人的特征抠出来
+
                         up_count += 1
                         # 进店的时候，把人物的图像抠出来
                         cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
@@ -142,9 +149,9 @@ class TrafficMonitor():
                     del paths[list(paths)[0]]
 
             # 4. 绘制统计信息（出入商店的人数） & 绘制检测框 todo: 函数放到别的文件里
-            ori_img = self.print_statistics_to_frame(ori_img, total_counter, total_track, up_count)
+            ori_img = print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count)
             if last_track_id >= 0:
-                ori_img = self.print_newest_info(angle, last_track_id, ori_img) # 打印撞线人的信息
+                ori_img = print_newest_info(angle, last_track_id, ori_img)  # 打印撞线人的信息
             if len(outputs) > 0: # 展示跟踪结果
                 bbox_tlwh = []
                 bbox_xyxy = outputs[:, :4]
@@ -159,19 +166,19 @@ class TrafficMonitor():
                 cv2.imshow("test", ori_img)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
-            self.logger.info("Index of frame: {} / "
+            self._logger.info("Index of frame: {} / "
                              "One Image spend time: {:.03f}s, "
                              "fps: {:.03f}, "
                              "tracks : {}, "
                              "detections : {}, "
                              "features of detections: {}"
-                             .format(idx_frame, end_time - start_time, 1 / (end_time - start_time)
+                              .format(idx_frame, end_time - start_time, 1 / (end_time - start_time)
                                      , bbox_xywh.shape[0]
                                      , len(outputs)
                                      , len(bbox_xywh)
                                      , features.shape
                                      )
-                             )
+                              )
         cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
         return idx_frame
 
@@ -198,10 +205,11 @@ class TrafficMonitor():
         max_idx = np.argmax(cos_sim, axis=1)
         maximum = np.max(cos_sim, axis=1)
         max_idx[maximum < 0.6] = -1
+
         # store query_fratures.npy & names.npy
         self.query_feat = query
-        self.names = names
-        self.logger.info("Succeed extracting features for ReID.")
+        self.query_names = names
+        self._logger.info("Succeed extracting features for ReID.")
 
     def exit_cam(self):
         idx_frame = 0
@@ -229,7 +237,18 @@ class TrafficMonitor():
             p2 = [0.52, 0.93]
             yellow_line_out = draw_yellow_line(p1, p2, ori_img)
 
-            # 2. 统计人数
+
+            # 3. reid 绘制重识别的结果
+            person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
+            max_idx = np.argmax(person_cossim, axis=1)
+            maximum = np.max(person_cossim, axis=1)
+            max_idx[maximum < 0.6] = -1
+            score = maximum
+            reid_results = max_idx
+            img, match_names = draw_reid_person(ori_img, xy, reid_results, self.query_names)  # draw_person name
+            print("[ReID] match people names: {} .".format(match_names))
+
+            # 2. 处理tracks
             for track in outputs:
                 bbox = track[:4]
                 track_id = track[-1]
@@ -253,7 +272,7 @@ class TrafficMonitor():
                     if angle > 0: # 入店
                         up_count += 1
                         # TODO：进行query的比对！
-
+                        reid_match_id = -1
 
                         # 出店的时候，把人物的图像抠出来------------- TODO: 该名称应该表示为入店时分配的ID
                         cv2.line(ori_img, yellow_line_out[0], yellow_line_out[1], (0, 0, 0), 1)  # 消除线条
@@ -265,10 +284,12 @@ class TrafficMonitor():
                         current_time = int(time.time())
                         localtime = time.localtime(current_time)
                         dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-                        print("[Customer in🍃] current customer💂‍♂️: {}, "
-                              "Exit time⏰ : {}".format(
+                        print("[Customer in🍃] current customer: {}, "
+                              "ReID match result💂‍♂️: {}"
+                              "Exit time⏰ : {}， ".format(
                             track_id
-                            , dt
+                            ,reid_match_id
+                            ,dt
                         ))
                     if angle < 0: # 出店
                         down_count += 1
@@ -277,41 +298,33 @@ class TrafficMonitor():
                 if len(paths) > 100:
                     del paths[list(paths)[0]]
 
-            # 3. reid 绘制重识别的结果
-            person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
-            max_idx = np.argmax(person_cossim, axis=1)
-            maximum = np.max(person_cossim, axis=1)
-            max_idx[maximum < 0.6] = -1
-            score = maximum
-            reid_results = max_idx
-            img, match_names = draw_reid_person(ori_img, xy, reid_results, self.names)  # draw_person name
-            print("[ReID] match people names: {} .".format(match_names))
 
-            # 4. 绘制统计信息
-            ori_img = self.print_statistics_to_frame(ori_img, total_counter, total_track, up_count)
+
+            # 4. 绘制统计信息 & 画bbox & 展示处理后的图像
+            ori_img = print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count)
             if last_track_id >= 0:
-                ori_img = self.print_newest_info(angle, last_track_id, ori_img)
+                ori_img = print_newest_info(angle, last_track_id, ori_img)
             if len(outputs) > 0: # 只打印检测的框，
                 bbox_tlwh = []
                 bbox_xyxy = outputs[:, :4]
                 identities = outputs[:, -1]
-                ori_im = draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
+                draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框, TODO: 也许应该改一下，如果reid检测到了就不显示person_number？
                 for bb_xyxy in bbox_xyxy:
                     bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
-
             if self.args.display:
                 cv2.imshow("Out camera", ori_img)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
-            # 5. 展示处理后的图像
+
+            # 5.
             end_time = time_synchronized()
-            self.logger.info("Index of frame: {} / "
+            self._logger.info("Index of frame: {} / "
                              "One Image spend time: {:.03f}s, "
                              "fps: {:.03f}, "
                              "tracks : {}, "
                              "detections : {}, "
                              "features of detections: {}"
-                             .format(idx_frame
+                              .format(idx_frame
                                      , end_time - start_time
                                      , 1 / (end_time - start_time)
                                      , bbox_xywh.shape[0]
@@ -319,58 +332,21 @@ class TrafficMonitor():
                                      , len(bbox_xywh)
                                      , features.shape
                                      )
-                             )
+                              )
 
         cv2.destroyAllWindows()
 
-    # *********************************************************************************************
 
 
-    def draw_yellow_line_in(self, ori_img):
-        line = [(int(0.08 * ori_img.shape[1]), int(0.70 * ori_img.shape[0])),
-                (int(0.6 * ori_img.shape[1]), int(0.45 * ori_img.shape[0]))]
-        cv2.line(ori_img, line[0], line[1], (0, 255, 255), 1)
-        return line
-
-    def draw_yellow_line_out(self, ori_img):
-        line = [(0, int(0.42 * ori_img.shape[0])),
-                (int(0.5 * ori_img.shape[1]), int(0.7 * ori_img.shape[0]))]
-        cv2.line(ori_img, line[0], line[1], (0, 255, 255), 1)
-        return line
-
-    def print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count):
-        label = "TOTAL: {} people cross the yellow line. ({} IN, {} OUT.)".format(str(total_counter), str(up_count), str(down_count))
-        t_size = get_size_with_pil(label, 15)  # 原：25
-        x1 = 20
-        y1 = 850
-        color = compute_color_for_labels(2)
-        ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
-        return ori_img
-
-    def print_newest_info(self, angle, last_track_id, ori_img):
-        current_time = int(time.time())
-        localtime = time.localtime(current_time)
-        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-        # ---------------------------------------
-        label = "TIME: {} | Person №{} crossed yellow line. [{}]".format(dt, str(last_track_id), str("IN") if angle >= 0 else str('OUT'))
-        t_size = get_size_with_pil(label, 25)
-        x1 = 20
-        y1 = 900
-        color = compute_color_for_labels(2)
-        ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
-        return ori_img
-
-
-
-
+# ********************************************************
 if __name__ == '__main__':
     # graphviz = GraphvizOutput()
     # graphviz.output_file = 'hierachy.png'
     #
     # with PyCallGraph(output=graphviz): # hierarchy graph
-    # ------------------ main function -----------------
+    # --< main function
     #     main()
-    # ----------------------------------------------------
+    # -->
     # print("[INFO] Finish output graphviz photo.")
 
     # initialize parameters

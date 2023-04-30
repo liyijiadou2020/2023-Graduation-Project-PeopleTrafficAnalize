@@ -41,11 +41,7 @@ def draw_boxes_and_text(img, bbox, identities=None, offset=(0, 0)):
         id = int(identities[i]) if identities is not None else 0
         color = compute_color_for_labels(id)
         label = '{}{:d}'.format("PID:", id)
-
-        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 改小，换字体 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        # t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 2, 2)[0] #得到文本尺寸参数，cv2.getTextSize(text, font, size, thickness)
         t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, 1)[0]
-        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         cv2.rectangle(img, (x1, y1), (x2, y2), color, 1)
         cv2.rectangle(
             img, (x1, y1), (x1 + t_size[0] + 1, y1 + t_size[1] + 1), color, -1)

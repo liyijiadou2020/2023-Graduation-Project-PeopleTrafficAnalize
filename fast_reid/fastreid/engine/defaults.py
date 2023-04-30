@@ -82,7 +82,7 @@ def default_argument_parser():
 def default_setup(cfg, args):
     """
     Perform some basic common setups at the beginning of a job, including:
-    1. Set up the detectron2 logger
+    1. Set up the detectron2 _logger
     2. Log basic information about environment, cmdline arguments, and config
     3. Backup the config to the output directory
     Args:
