@@ -4,6 +4,7 @@
 # @Author : liyijia
 
 import os
+import re
 import time
 import cv2
 import torch
@@ -25,6 +26,34 @@ from collections import Counter
 from collections import deque
 import math
 from PIL import Image, ImageDraw, ImageFont
+from pathlib import Path
+import sys
+
+# ------------------- 路径 ---------
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[0]  # project root directory
+
+if str(ROOT) not in sys.path:
+    sys.path.append(str(ROOT))  # add ROOT to PATH
+
+ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
+# -------------------
+
+
+# 测试，用来建立结果生成目录
+def increment_path(path, exist_ok=True, sep=''):
+    # Increment path, i.e. runs/exp --> runs/exp{sep}0, runs/exp{sep}1 etc.
+    path = os.path.abspath(path)  # os-agnostic
+    if (os.path.exists(path) and exist_ok) or (not os.path.exists(path)):
+        return str(path)
+    else:
+        dirs = [d for d in os.listdir(os.path.dirname(path)) if
+                re.match(rf"{os.path.basename(path)}{sep}\d+", d)]
+        i = [int(re.search(r"\d+", d).group()) for d in dirs]  # indices
+        n = max(i) + 1 if i else 2  # increment number
+        return f"{os.path.dirname(path)}{os.path.sep}{os.path.basename(path)}{sep}{n}"  # update path
+
+
 
 def tlbr_midpoint(box):
     minX, minY, maxX, maxY = box
