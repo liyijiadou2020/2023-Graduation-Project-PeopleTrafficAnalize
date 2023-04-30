@@ -71,8 +71,8 @@ class TrafficMonitor():
 
     def demo(self):
         self.enter_cam()  # enter store
-        # self.feature_extract()  # extract features of customers, who entered
-        # self.exit_cam()  # exit store
+        self.feature_extract()  # extract features of customers, who entered
+        self.exit_cam()  # exit store
 
     def enter_cam(self):
         idx_frame = 0
@@ -97,15 +97,11 @@ class TrafficMonitor():
             p2_ratio = [0.36, 0.84]
             yellow_line_in = draw_yellow_line(p1_ratio, p2_ratio, ori_img)
 
-
-            # 2. 统计跟踪的结果：
-            #  2.1 给每一个track画出轨迹
-            #  2.2 检查track是否与黄线相交
-            #   2.2.1 如果track跨过了黄线，则判断是进入还是离开。如果是进入则提取出ROI并保存到runs目录下
+            # 2. 统计人数
             for track in outputs:
                 bbox = track[:4]
                 track_id = track[-1]
-                midpoint_1 = tlbr_midpoint(bbox)
+                midpoint_1 = tlbr_midpoint(bbox) # TODO: 简化撞线计算
                 origin_midpoint = (midpoint_1[0],
                                    ori_img.shape[0] - midpoint_1[1])  # get midpoint_1 respective to bottom-left
                 if track_id not in paths:
@@ -142,7 +138,7 @@ class TrafficMonitor():
                     if angle < 0:
                         down_count += 1
 
-                if len(paths) > 50: # TODO: 50写到常量中
+                if len(paths) > 100: # TODO: 50写到常量中
                     del paths[list(paths)[0]]
 
             # 4. 绘制统计信息（出入商店的人数） & 绘制检测框
@@ -217,10 +213,8 @@ class TrafficMonitor():
         up_count = 0
         down_count = 0
         already_counted = deque(maxlen=50)  # temporary memory for storing counted IDs
-        # ------------------ 出店逻辑：截取客户的图像 & 与入店的人做匹配 & 输出对应的ID --------
         for video_path, img, ori_img, vid_cap in self.dataset_2:
             idx_frame += 1
-            # print("[INFO] out index frame = ", idx_frame)
             start_time = time_synchronized()
             # yolo detection
             bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model.detect(video_path, img, ori_img, vid_cap)
@@ -258,6 +252,8 @@ class TrafficMonitor():
                     if angle > 0: # 入店
                         up_count += 1
                     if angle < 0: # 出店
+                        # TODO：进行query的比对！
+
                         down_count += 1
                         # 出店的时候，把人物的图像抠出来------------- TODO: 该名称应该表示为入店时分配的ID
                         cv2.line(ori_img, yellow_line_out[0], yellow_line_out[1], (0, 0, 0), 1)  # 消除线条
@@ -265,8 +261,17 @@ class TrafficMonitor():
                         path = str('./runs/reid_output/exit/track_id-{}.jpg'.format(track_id))
                         makedir(path)
                         cv2.imwrite(path, ROI_person)
+                        # 打印当前的时间 & 顾客入店信息
+                        current_time = int(time.time())
+                        localtime = time.localtime(current_time)
+                        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+                        print("[Customer gone🍃] current customer💂‍♂️: {}, "
+                              "Exit time⏰ : {}".format(
+                            track_id
+                            , dt
+                        ))
 
-                if len(paths) > 50:
+                if len(paths) > 100:
                     del paths[list(paths)[0]]
             # 3. 绘制人员
             person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
