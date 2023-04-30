@@ -31,6 +31,26 @@ def tlbr_midpoint(box):
     midpoint = (int((minX + maxX) / 2), int((minY + maxY) / 2))  # minus y coordinates to get proper xy format
     return midpoint
 
+def makedir(dir_path):
+    # 创建目录
+    dir_path = os.path.dirname(dir_path)  # 获取路径名，删掉文件名
+    bool = os.path.exists(dir_path)  # 存在返回True，不存在返回False
+    if bool:
+        pass
+    else:
+        os.makedirs(dir_path)
+
+def draw_yellow_line(point_1, point_2, ori_img):
+    # line = [(int(0.08 * ori_img.shape[1]), int(0.70 * ori_img.shape[0])),
+    #         (int(0.6 * ori_img.shape[1]), int(0.45 * ori_img.shape[0]))]
+
+    line = [( int(point_1[0] * ori_img.shape[1]), int(point_1[1] * ori_img.shape[0])),
+            ( int(point_2[0] * ori_img.shape[1]), int(point_2[1] * ori_img.shape[0]))
+            ]
+
+    cv2.line(ori_img, line[0], line[1], (0, 255, 255), 1)
+    return line
+
 
 def intersect(A, B, C, D):
     return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)

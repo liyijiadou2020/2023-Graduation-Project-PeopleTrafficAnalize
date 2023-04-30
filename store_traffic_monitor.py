@@ -7,7 +7,7 @@ import torch
 import warnings
 import argparse
 from person_count import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
-    put_text_to_cv2_img_with_pil
+    put_text_to_cv2_img_with_pil, draw_yellow_line, makedir
 from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_person, draw_boxes
 from utils.general import check_img_size
@@ -22,6 +22,35 @@ from fast_reid.demo.person_bank import Reid_feature
 from pycallgraph2 import PyCallGraph
 from pycallgraph2.output import GraphvizOutput
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    # parser.add_argument("--video_path", default='./test_video/test3', type=str) # ok
+
+    parser.add_argument("--video_path", default='./test_video/cam1.mp4', type=str)
+    parser.add_argument("--video_out_path", default='./test_video/cam2.mp4', type=str)
+
+    # parser.add_argument("--video_path", default='./test_video/vid_in.mp4', type=str)
+    # parser.add_argument("--video_out_path", default='./test_video/vid_out.mp4', type=str)
+
+    parser.add_argument("--camera", action="store", dest="cam", type=int, default="-1")
+    parser.add_argument('--device', default='cuda:0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument("--display", default=True, help='True: show window, False: not')
+    parser.add_argument("--frame_interval", type=int, default=1)
+    parser.add_argument("--cpu", dest="use_cuda", action="store_false", default=True)
+    # yolov5
+    parser.add_argument('--weights', nargs='+', type=str, default='./weights/yolov5s.pt', help='model.pt path(s)')
+    parser.add_argument('--img-size', type=int, default=1080, help='inference size (pixels)')
+    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
+    parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
+    parser.add_argument('--classes', default=[0], type=int, help='filter by class: --class 0, or --class 0 2 3')
+    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
+    parser.add_argument('--augment', action='store_true', help='augmented inference')
+    # deep_sort
+    parser.add_argument("--sort", default=False, help='True: sort model or False: reid model')
+    parser.add_argument("--config_deepsort", type=str, default="./configs/deep_sort.yaml")
+
+    return parser.parse_args()
 
 class TrafficMonitor():
     def __init__(self, cfg, args, path_in, path_out):
@@ -40,19 +69,10 @@ class TrafficMonitor():
 
         self.logger.info("args: ", self.args)
 
-    # 创建目录
-    def makedir(self, dir_path):
-        dir_path = os.path.dirname(dir_path)  # 获取路径名，删掉文件名
-        bool = os.path.exists(dir_path)  # 存在返回True，不存在返回False
-        if bool:
-            pass
-        else:
-            os.makedirs(dir_path)
-
     def demo(self):
         self.enter_cam()  # enter store
-        self.feature_extract()  # extract features of customers, who entered
-        self.exit_cam()  # exit store
+        # self.feature_extract()  # extract features of customers, who entered
+        # self.exit_cam()  # exit store
 
     def enter_cam(self):
         idx_frame = 0
@@ -71,9 +91,13 @@ class TrafficMonitor():
             # yolo detection
             bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model.detect(video_path, img, ori_img, vid_cap)
             # do tracking # features: reid模型输出512dim特征
-            outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
-            # 1. 画黄线
-            yellow_line_in = self.draw_yellow_line_in(ori_img)
+            outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img) # TODO: 路径问题，一定要放在test_video下才可以
+            # 1. 画黄线 ok!
+            p1_ratio = [0.31, 0.50]
+            p2_ratio = [0.36, 0.84]
+            yellow_line_in = draw_yellow_line(p1_ratio, p2_ratio, ori_img)
+
+
             # 2. 统计跟踪的结果：
             #  2.1 给每一个track画出轨迹
             #  2.2 检查track是否与黄线相交
@@ -104,7 +128,7 @@ class TrafficMonitor():
                         cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
                         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
                         path = str('./runs/reid_output/enter/track_id-{}.jpg'.format(track_id))
-                        self.makedir(path)
+                        makedir(path)
                         cv2.imwrite(path, ROI_person)
                         # 打印当前的时间 & 顾客入店信息
                         current_time = int(time.time())
@@ -171,7 +195,7 @@ class TrafficMonitor():
         np.save(os.path.join('./runs', 'query_features'), embs[:-1, :])
         np.save(os.path.join('./runs', 'names'), names)  # save query
         path = str('./runs/query_features.npy')
-        self.makedir(path)
+        makedir(path)
         query = np.load(path)
         cos_sim = cosine_similarity(embs, query)
         max_idx = np.argmax(cos_sim, axis=1)
@@ -205,7 +229,11 @@ class TrafficMonitor():
             outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
 
             # 1. 画黄线
-            yellow_line_out = self.draw_yellow_line_out(ori_img)
+            # yellow_line_out = self.draw_yellow_line_out(ori_img)
+            p2 = [1500, 450]
+            p1 = [1700, 1000]
+            yellow_line_out = draw_yellow_line(p1, p2, ori_img)
+
             # 2. 统计人数
             for track in outputs:
                 bbox = track[:4]
@@ -235,7 +263,7 @@ class TrafficMonitor():
                         cv2.line(ori_img, yellow_line_out[0], yellow_line_out[1], (0, 0, 0), 1)  # 消除线条
                         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
                         path = str('./runs/reid_output/exit/track_id-{}.jpg'.format(track_id))
-                        self.makedir(path)
+                        makedir(path)
                         cv2.imwrite(path, ROI_person)
 
                 if len(paths) > 50:
@@ -283,6 +311,8 @@ class TrafficMonitor():
         cv2.destroyAllWindows()
 
     # *********************************************************************************************
+
+
     def draw_yellow_line_in(self, ori_img):
         line = [(int(0.08 * ori_img.shape[1]), int(0.70 * ori_img.shape[0])),
                 (int(0.6 * ori_img.shape[1]), int(0.45 * ori_img.shape[0]))]
@@ -318,40 +348,26 @@ class TrafficMonitor():
         return ori_img
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--video_path", default='./test_video/vid_in.mp4', type=str)
-    parser.add_argument("--video_out_path", default='./test_video/vid_out.mp4', type=str)
-    parser.add_argument("--camera", action="store", dest="cam", type=int, default="-1")
-    parser.add_argument('--device', default='cuda:0', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument("--display", default=True, help='True: show window, False: not')
-    parser.add_argument("--frame_interval", type=int, default=1)
-    parser.add_argument("--cpu", dest="use_cuda", action="store_false", default=True)
-    # yolov5
-    parser.add_argument('--weights', nargs='+', type=str, default='./weights/yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--img-size', type=int, default=1080, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
-    parser.add_argument('--classes', default=[0], type=int, help='filter by class: --class 0, or --class 0 2 3')
-    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
-    parser.add_argument('--augment', action='store_true', help='augmented inference')
-    # deep_sort
-    parser.add_argument("--sort", default=False, help='True: sort model or False: reid model')
-    parser.add_argument("--config_deepsort", type=str, default="./configs/deep_sort.yaml")
 
-    return parser.parse_args()
 
 if __name__ == '__main__':
-    graphviz = GraphvizOutput()
-    graphviz.output_file = 'hierachy.png'
-
-    with PyCallGraph(output=graphviz): # hierarchy graph
+    # graphviz = GraphvizOutput()
+    # graphviz.output_file = 'hierachy.png'
+    #
+    # with PyCallGraph(output=graphviz): # hierarchy graph
     # ------------------ main function -----------------
-        args = parse_args()
-        cfg = get_config()
-        cfg.merge_from_file(args.config_deepsort)
-        monitor = TrafficMonitor(cfg, args, path_in=args.video_path, path_out=args.video_out_path)
-        with torch.no_grad():
-            monitor.demo()
+    #     main()
     # ----------------------------------------------------
-    print("[INFO] Finish output graphviz photo.")
+    # print("[INFO] Finish output graphviz photo.")
+
+    # initialize parameters
+    args = parse_args()
+
+    # initialize StrongSORT
+    cfg = get_config()
+    cfg.merge_from_file(args.config_deepsort)
+
+    #
+    monitor = TrafficMonitor(cfg, args, path_in=args.video_path, path_out=args.video_out_path)
+    with torch.no_grad():
+        monitor.demo()
