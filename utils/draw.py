@@ -55,20 +55,22 @@ def draw_boxes_and_text(img, bbox, identities=None, offset=(0, 0)):
 
 
 # TODO: 这是在做什么？把query库中
-def draw_person(img, bbox_xyxy, reid_results, names, identities=None, offset=(0, 0)):
+def draw_reid_person(img, bbox_xyxy, reid_results, names, identities=None, offset=(0, 0)):
+    match_names = []
     for i, x in enumerate(bbox_xyxy):
         person_name = names[reid_results[i]]
+        if person_name == "None":
+            continue
+
         t_size = cv2.getTextSize(person_name, cv2.FONT_HERSHEY_PLAIN, 1, 1)[0]
         color = (7, 127, 15)
         c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
-
-        if person_name == "None":
-            continue
         cv2.rectangle(img, c1, c2, color, lineType=cv2.LINE_AA)
         cv2.rectangle(img, (c2[0] - t_size[0]-3, c2[1]-t_size[1] - 4), c2, color, -1)
         cv2.putText(img, "[Matched!] "+person_name, (c2[0] - t_size[0]-3, c2[1]), cv2.FONT_HERSHEY_PLAIN, 1, [255, 255, 255], 1)
+        match_names.append(person_name)
 
-    return img
+    return img, match_names
 
 
 if __name__ == '__main__':

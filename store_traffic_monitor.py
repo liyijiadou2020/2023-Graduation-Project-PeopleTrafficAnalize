@@ -9,7 +9,7 @@ import argparse
 from person_count import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
     put_text_to_cv2_img_with_pil, draw_yellow_line, makedir
 from utils.datasets import LoadStreams, LoadImages
-from utils.draw import draw_boxes_and_text, draw_person, draw_boxes
+from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
 from utils.general import check_img_size
 from person_detect_yolov5 import YoloPersonDetect
 from deep_sort import build_tracker, DeepReid
@@ -284,8 +284,8 @@ class TrafficMonitor():
             max_idx[maximum < 0.6] = -1
             score = maximum
             reid_results = max_idx
-            draw_person(ori_img, xy, reid_results, self.names)  # draw_person name
-
+            img, match_names = draw_reid_person(ori_img, xy, reid_results, self.names)  # draw_person name
+            print("[ReID] match people names: {} .".format(match_names))
 
             # 4. 绘制统计信息
             ori_img = self.print_statistics_to_frame(ori_img, total_counter, total_track, up_count)
