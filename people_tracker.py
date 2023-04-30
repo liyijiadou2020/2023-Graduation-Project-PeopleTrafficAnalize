@@ -24,9 +24,6 @@ from pycallgraph2 import PyCallGraph
 from pycallgraph2.output import GraphvizOutput
 
 
-
-
-
 class VideoStreamTracker():
     def __init__(self, yolo_model,
                  deepsort_model,
@@ -63,32 +60,21 @@ class VideoStreamTracker():
         self.query_feat = query_feat
         self.query_names = query_names
         # 4.绘制统计信息 & 绘制检测框 & 绘制帧数
-        self.total_frame_count = 0
         # 5.展示图像，输出结果视频
         self.is_display = is_display
         self.is_save_vid = True # todo: 增加到参数中
-        self.result_video_path = '{}/result.avi'.format(output_people_img_path)
         # 6.销毁窗口 & 打印log
 
-    def process_frame(self, query_feat=None, query_names=[]):
+    def tracking(self, query_feat=None, query_names=[]):
         if self.tracker_type_number != 0: # 如果不是入口摄像头，那么在处理之前要更新一下query_feat, query_names
             self.update_reid_query(query_feat, query_names)
-
         paths = {}  # 每一个track的行动轨迹
         last_track_id = -1
         angle = -1
         already_counted = deque(maxlen=100)  # temporary memory for storing counted IDs
 
-        total_frame_count = 0
-        # for _, _, ori_img, _ in self.dataset:
-        #     total_frame_count += 1
-        #     print("[INFO] total_frame_count: ", total_frame_count)
-        self.total_frame_count = total_frame_count
-
-        # # ---- 输出视频 ----
         vid_path = None
         vid_writer = None
-        # # ----------------
 
         for video_path, img, ori_img, vid_cap in self.dataset:  # 获取视频帧
             self.idx_frame += 1
@@ -100,7 +86,6 @@ class VideoStreamTracker():
 
             # 1.画黄线
             yellow_line = draw_yellow_line(self.p1_ratio, self.p2_ratio, ori_img)
-
             # 2. 处理tracks
             for track in outputs:
                 bbox = track[:4]
@@ -124,24 +109,21 @@ class VideoStreamTracker():
                     angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
                     if angle > 0:  # 进店
                         self.up_count += 1
-                        self.customer_first_enter(bbox, ori_img, track_id, yellow_line)
+                        self.customer_enter(bbox, ori_img, track_id, yellow_line)
                     if angle < 0:
                         self.down_count += 1
 
-            # 3.重识别结果 - Enter不需要管这个
+            # 3.重识别结果 - Enter摄像头不需要管这个
             if self.tracker_type_number != 0:
-                # self.method_1(features, ori_img, xy)
                 img, match_names = self.draw_reid_result_to_frame(features, ori_img, xy)
-
             # 4.绘制统计信息
             ori_img = self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, self.total_track)
-            # 5.展示图像，todo:输出结果视频
+            # 5.展示图像，输出结果视频
             if self.is_display:
                 cv2.imshow("test", ori_img)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
             end_time = time_synchronized()
-
             if self.is_save_vid: # 输出视频
                 if vid_path != self.output_people_img_path:
                     vid_path = self.output_people_img_path
@@ -157,7 +139,6 @@ class VideoStreamTracker():
                         Path(self.output_people_img_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
                     vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                 vid_writer.write(ori_img)
-
             print("Index of frame: {} "
                               "Spend time: {:.03f}s, "
                               "Fps: {:.03f}, "
@@ -177,7 +158,7 @@ class VideoStreamTracker():
         cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
         # vid_writer.release()
 
-    def customer_first_enter(self, bbox, ori_img, track_id, yellow_line_in):
+    def customer_enter(self, bbox, ori_img, track_id, yellow_line_in):
         # todo: 把撞线人的特征输出来 & 记录入店的时间
 
         # 进店的时候，把人物的图像抠出来
