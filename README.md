@@ -9,10 +9,20 @@ This is an implementation of a store traffic statistics system. Implemented cros
 #### In this project using follow models:
 1. yolov5x pre-trained model
 2. DeepSORT model, trained on dataset MARKET1501
-3. FastReid model, The reid model is trained by the fast-reid framework, resnet34 distilled from resnet101
+3. FastReid model, The reid model is trained by the fast-reid framework. The resnet34 distilled from resnet101 is very large because the model saves parameters such as the FC layer and optimizer. If these are removed and only resnet34 is kept, the model will be more than 30 MB.
+
+#### Enviroments
+This project is trained and tested in Python 3.9.16, in frameword `pytorch 1.13.0 py3.9_cuda11.7_cudnn8_0`
+- OS: Windows 10 Professional
+- GPU: NVIDIA GEFORCE GTX1050Ti, 4G
 
 #### How to run
+1. download yolo model `yolo5x.pt` to `./weights/`
+2. download reid model `model_final.pth` to `/kd-r34-r101_ibn`
+3. start with `python store_traffic_monitor.py`
 
+
+---
 
 ![avatar](./documents/report-hierarchy-CN.png)
 ![avatar](./documents/Presentation/1.png)
