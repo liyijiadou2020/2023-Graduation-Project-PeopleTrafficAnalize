@@ -72,8 +72,8 @@ class TrafficMonitor():
 
         exp_name = 'exp'
         project = ROOT / 'runs/tracks'
-        # save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
-        save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
+        save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
+        # save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
         save_dir = Path(save_dir)
         self.save_dir = save_dir
         self.save_dir_in = str(save_dir / 'in')
@@ -81,7 +81,7 @@ class TrafficMonitor():
         makedir(self.save_dir_in)
 
         p1 = [0.31, 0.74]
-        p2 = [0.88, 0.62]
+        p2 = [1.00, 0.59]
         # 0 means this camera is entering camera
         self.cam_in_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
                                                  self.deepsort, self.dataset_1, None, [],
