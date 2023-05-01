@@ -26,6 +26,7 @@ from pycallgraph2.output import GraphvizOutput
 
 class VideoStreamTracker():
     def __init__(self, yolo_model,
+                 reid_model,
                  deepsort_model,
                  dataset,
                  query_feat,
@@ -57,18 +58,20 @@ class VideoStreamTracker():
         # 2.处理tracks
         self._save_dir = output_people_img_path
         # 3.ReID
+        self.reid_model = reid_model
         self.query_feat = query_feat
         self.query_names = query_names
         # 4.绘制统计信息 & 绘制检测框 & 绘制帧数
         # 5.展示图像，输出结果视频
         self.is_display = is_display
-        self.is_save_vid = True # todo: 增加到参数中
+        self.is_save_vid = False # todo: 增加到参数中
         # 6.销毁窗口 & 打印log
 
     def tracking(self, query_feat=None, query_names=[]):
         # 如果不是入口摄像头，那么在处理之前要更新一下query_feat, cus_names
         if self.tracker_type_number != 0:
             self.update_reid_query(query_feat, query_names)
+
         paths = {}  # 每一个track的行动轨迹
         last_track_id = -1
         angle = -1
@@ -84,7 +87,6 @@ class VideoStreamTracker():
             # yolo detection
             bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model.detect(video_path, img, ori_img, vid_cap)
             # outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
-            # TODO: deepsort有问题，如果检测不到人的话就会参数出错：ValueError: not enough values to unpack (expected 2, got 0)
             if len(bbox_xywh) > 0 and len(cls_conf) > 0: # 加上这句，如果没检测到人就直接跳过这一帧
                 outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
 
@@ -113,7 +115,10 @@ class VideoStreamTracker():
                     angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
                     if angle > 0:  # 进店
                         self.up_count += 1
-                        self.customer_enter(bbox, ori_img, track_id, yellow_line)
+                        if self.tracker_type_number == 0:
+                            self.customer_enter(bbox, ori_img, track_id, yellow_line)
+                        else: # 功能已经实现，但是要调参
+                            self.person_search(bbox, ori_img, track_id)
                     if angle < 0:
                         self.down_count += 1
 
@@ -184,6 +189,40 @@ class VideoStreamTracker():
             , dt
         ))
 
+    def person_search(self, bbox, ori_img, track_id): # todo: bug, 重识别失败了，why？
+        ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
+        query_feature_vector = self.reid_model(ROI_person)
+        # ---- compare -----------
+        cos_sim = cosine_similarity(self.query_feat, query_feature_vector)
+        max_idx = np.argmax(cos_sim, axis=1)  # 每行最大值的索引
+        maximum = np.max(cos_sim, axis=1)
+        print("[ReID DEBUG] maximum = ", maximum)
+        # --- fix bug: 如果搜索不到 ---
+        if max(maximum) > 0.4: # 0.5大了
+            max_idx[maximum < 0.4] = -1
+            idx = np.argmax(max_idx)  # todo: bug, 没办法检测全是-1的情况
+            person_name = self.query_names[idx]  # 搜寻得到的
+        else:
+            person_name = "new-{}".format(track_id)
+
+        print("[DEBUG-reid] person_name: ", person_name)
+        path = str(self._save_dir + '/{}.jpg'.format(person_name))
+        makedir(path)
+        cv2.imwrite(path, ROI_person)
+
+        # 打印当前的时间 & 顾客入店信息
+        current_time = int(time.time())
+        localtime = time.localtime(current_time)
+        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+        print("[ReID Result🙌] person: {}, "
+              "time⏰ : {}".format(
+            person_name
+            , dt
+        ))
+
+
+
+
     def draw_info_to_frame(self, angle, last_track_id, ori_img, outputs, total_track):
         ori_img = print_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
         ori_img = draw_idx_frame(ori_img, self.idx_frame)
@@ -214,12 +253,12 @@ class VideoStreamTracker():
         self.query_names = names
 
     def feature_extract(self):
-        reid_feature = Reid_feature() # reid model
+        # reid_feature = Reid_feature() # reid model
         names = []
         embs = np.ones((1, 512), dtype=np.int)
         for image_name in os.listdir(self._save_dir):
             img = cv2.imread(os.path.join(self._save_dir, image_name))
-            feat = reid_feature(img)  # 提取特征，返回正则化的numpy数组
+            feat = self.reid_model(img)  # 提取特征，返回正则化的numpy数组
             pytorch_output = feat.numpy()  # 转化成numpy数组
             embs = np.concatenate((pytorch_output, embs), axis=0) # 和已有的特征向量数组embs在第0维上进行拼接，得到更新后的embs数组
             names.append(image_name[0:-4])  # 去除.jpg作为顾客的名字
