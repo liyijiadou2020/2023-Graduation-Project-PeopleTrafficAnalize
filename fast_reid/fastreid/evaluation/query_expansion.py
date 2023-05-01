@@ -18,7 +18,7 @@ def aqe(query_feat: torch.tensor, gallery_feat: torch.tensor,
     Combining the retrieved topk nearest neighbors with the original query and doing another retrieval.
     c.f. https://www.robots.ox.ac.uk/~vgg/publications/papers/chum07b.pdf
     Args :
-        query_feat (torch.tensor):
+        cus_features (torch.tensor):
         gallery_feat (torch.tensor):
         qe_times (int): number of query expansion times.
         qe_k (int): number of the neighbors to be combined.

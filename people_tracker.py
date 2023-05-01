@@ -33,9 +33,9 @@ class VideoStreamTracker():
                  output_people_img_path,
                  is_display, p1, p2, tracker_type_number=-1):
         '''
-        todo: 默认参数：query_feat - None, query_names - [],  is_display - True
+        todo: 默认参数：cus_features - None, cus_names - [],  is_display - True
         parameters:
-            query_feat : reid使用的查询库的特征
+            cus_features : reid使用的查询库的特征
             output_people_img_path : 将提取出的人物图像放在什么路径下
             is_display : 是否展示视频
             p1, p2 : 黄线的两个端点占画面的比例（0-1之间），用列表的形式传递
@@ -55,7 +55,7 @@ class VideoStreamTracker():
         self.p1_ratio = p1
         self.p2_ratio = p2
         # 2.处理tracks
-        self.output_people_img_path = output_people_img_path
+        self._save_dir = output_people_img_path
         # 3.ReID
         self.query_feat = query_feat
         self.query_names = query_names
@@ -66,7 +66,7 @@ class VideoStreamTracker():
         # 6.销毁窗口 & 打印log
 
     def tracking(self, query_feat=None, query_names=[]):
-        # 如果不是入口摄像头，那么在处理之前要更新一下query_feat, query_names
+        # 如果不是入口摄像头，那么在处理之前要更新一下query_feat, cus_names
         if self.tracker_type_number != 0:
             self.update_reid_query(query_feat, query_names)
         paths = {}  # 每一个track的行动轨迹
@@ -129,8 +129,8 @@ class VideoStreamTracker():
                     break
             end_time = time_synchronized()
             if self.is_save_vid: # 输出视频
-                if vid_path != self.output_people_img_path:
-                    vid_path = self.output_people_img_path
+                if vid_path != self._save_dir:
+                    vid_path = self._save_dir
                     if isinstance(vid_writer, cv2.VideoWriter):
                         vid_writer.release()
                     if vid_cap:  # video
@@ -140,7 +140,7 @@ class VideoStreamTracker():
                     else:  # stream
                         fps, w, h = 30, ori_img.shape[1], ori_img.shape[0]
                     save_path = str(
-                        Path(self.output_people_img_path).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
+                        Path(self._save_dir).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
                     vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                 vid_writer.write(ori_img)
             print("Index of frame: {} "
@@ -171,7 +171,7 @@ class VideoStreamTracker():
         # 进店的时候，把人物的图像抠出来
         cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        path = str(self.output_people_img_path + '/cus{}.jpg'.format(track_id))
+        path = str(self._save_dir + '/cus{}.jpg'.format(track_id))
         makedir(path)
         cv2.imwrite(path, ROI_person)
         # 打印当前的时间 & 顾客入店信息
@@ -217,28 +217,29 @@ class VideoStreamTracker():
         reid_feature = Reid_feature() # reid model
         names = []
         embs = np.ones((1, 512), dtype=np.int)
-        for image_name in os.listdir(self.output_people_img_path):
-            img = cv2.imread(os.path.join(self.output_people_img_path, image_name))
-            feat = reid_feature(img)  # extract normlized feat
-            pytorch_output = feat.numpy()
-            embs = np.concatenate((pytorch_output, embs), axis=0)
+        for image_name in os.listdir(self._save_dir):
+            img = cv2.imread(os.path.join(self._save_dir, image_name))
+            feat = reid_feature(img)  # 提取特征，返回正则化的numpy数组
+            pytorch_output = feat.numpy()  # 转化成numpy数组
+            embs = np.concatenate((pytorch_output, embs), axis=0) # 和已有的特征向量数组embs在第0维上进行拼接，得到更新后的embs数组
             names.append(image_name[0:-4])  # 去除.jpg作为顾客的名字
-        names = names[::-1]
+        names = names[::-1] # 倒序翻转 [1, 2, 3, 4, 5] -> [5, 4, 3, 2, 1]
         names.append("None")
 
-        feat_path = os.path.join(str(self.output_people_img_path), '..', 'query_features')
-        names_path = os.path.join(str(self.output_people_img_path), '..', 'names')
-        np.save(feat_path, embs[:-1, :])
+        feat_path = os.path.join(str(self._save_dir), '..', 'query_features')
+        names_path = os.path.join(str(self._save_dir), '..', 'names')
+        # 实际保存的是embs数组中除了最后一行以外的所有行
+        np.save(feat_path, embs[:-1, :]) # 将numpy数组 embs 的第一维度的所有元素（除了最后一个元素）保存为二进制文件的操作，文件名为 feat_path
         np.save(names_path, names)  # save query
 
-        # 从路径加载query todo: 这操作？
+        # 代码读取一个.npy文件，该文件中包含了一个特征向量query，将另外一组特征向量embs与query计算余弦相似度
         path = '{}.npy'.format(str(feat_path))
-        makedir(path)
         query = np.load(path)
         cos_sim = cosine_similarity(embs, query)
         max_idx = np.argmax(cos_sim, axis=1)
         maximum = np.max(cos_sim, axis=1)
         max_idx[maximum < 0.6] = -1
+        # -------------- 用作reid对比 ？ --------------
         print("Succeed extracting features for ReID.")
 
         return query, names

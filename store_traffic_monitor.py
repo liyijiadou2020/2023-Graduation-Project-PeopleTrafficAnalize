@@ -28,8 +28,6 @@ from pathlib import Path
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    # parser.add_argument("--video_path", default='./test_video/test3', type=str) # ok
-
     parser.add_argument("--video_path", default='./test_video/cam1.mp4', type=str)
     parser.add_argument("--video_out_path", default='./test_video/cam2.mp4', type=str)
     parser.add_argument("--video3_path", default='./test_video/cam3.mp4', type=str) # todo：加载成功了，但好像是yolo的问题
@@ -61,45 +59,37 @@ class TrafficMonitor():
         if not use_cuda:
             warnings.warn("Running in cpu mode which maybe very slow!", UserWarning)
         self.yolo_model = YoloPersonDetect(self.args)
-        self.deepsort = build_tracker(cfg, args.sort, use_cuda=use_cuda)         # Deepsort with ReID
+        self.deepsort = build_tracker(cfg, args.sort, use_cuda=use_cuda) # Deepsort with ReID
         imgsz = check_img_size(args.img_size, s=32)  # check img_size
 
         self.dataset_1 = LoadImages(path_in, img_size=imgsz)    # ok
         self.dataset_2 = LoadImages(path_out, img_size=imgsz)   # ok
-        self.dataset_3 = LoadImages(path3, img_size=imgsz)      # todo: cam3.mp4视频本身有问题
+        self.dataset_3 = LoadImages(path3, img_size=imgsz)      # ok
 
-        self.query_names = []
-        self.query_feat = None
+        self.reid_model = Reid_feature()
+        self.cus_names = []
+        self.cus_features = None
 
         exp_name = 'exp'
         project = ROOT / 'runs/tracks'
-        save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则新建一个
-        # save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 不允许同名目录存在，如果存在则新建一个
+        save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
+        # save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
         save_dir = Path(save_dir)
         self.save_dir = save_dir
         self.save_dir_in = str(save_dir / 'in')
         makedir(self.save_dir)
         makedir(self.save_dir_in)
 
-        # p1 = [0.31, 0.50] #
-        # p2 = [0.36, 0.84] #
         p1 = [0.31, 0.74]
         p2 = [0.88, 0.62]
         # 0 means this camera is entering camera
         self.cam_in_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_1, None, [],
-                                                 self.save_dir_in, True, p1, p2, 0) # is_display = False
-        # p2_1 = [0.52, 0.51] # [0.31, 0.50]
-        # p2_2 = [0.52, 0.93] # [0.36, 0.84]
+                                                 self.save_dir_in, True, p1, p2, 0)
         p2_1 = [0.31, 0.50]
         p2_2 = [0.36, 0.84]
-
         # 3 means this camera in store, todo: 'in2' , 'in3' 变量化
         self.cam2_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_2, None, [],
                                                str(save_dir / 'in2'), True, p2_1, p2_2, 3)
-
-
-        # p3_1 = [0.31, 0.74] # [0.52, 0.51]
-        # p3_2 = [0.88, 0.62] # [0.52, 0.93]
         p3_1 = [0.52, 0.51]
         p3_2 = [0.52, 0.93]
         self.cam3_tracker = VideoStreamTracker(self.yolo_model, self.deepsort, self.dataset_3, None, [],
@@ -108,18 +98,22 @@ class TrafficMonitor():
         self._logger.info("args: ", self.args)
 
     def demo(self):
-        self.query_feat, self.query_names = self.cam_in_tracker.tracking()
-        # self.query_feat, self.query_names = self.feature_extract_from_project_dir()
-        self.cam2_tracker.tracking(self.query_feat, self.query_names)
-        self.cam3_tracker.tracking(self.query_feat, self.query_names)
+        self.cus_features, self.cus_names = self.cam_in_tracker.tracking()
+        self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
+        self.cam2_tracker.tracking(self.cus_features, self.cus_names)
+        self.cam3_tracker.tracking(self.cus_features, self.cus_names)
 
-    def feature_extract_from_project_dir(self):
-        reid_feature = Reid_feature() # reid model
+        # name_idx = self.person_query('yoyo.jpg')  # 把需要查询的人物照片放在 self.save_dir，就可以通过函数查询
+        # print("Query result: {}".format(self.cus_names[name_idx]))
+
+# ----------------
+    def feature_extract_from_in_dir(self):
+        # reid = self.reid_model # reid model
         names = []
         embs = np.ones((1, 512), dtype=np.int)
         for image_name in os.listdir(self.save_dir_in):
             img = cv2.imread(os.path.join(self.save_dir_in, image_name))
-            feat = reid_feature(img)  # extract normlized feat
+            feat = self.reid_model(img)  # extract normlized feat
             pytorch_output = feat.numpy()
             embs = np.concatenate((pytorch_output, embs), axis=0)
             names.append(image_name[0:-4])  # 去除.jpg作为顾客的名字
@@ -130,17 +124,34 @@ class TrafficMonitor():
         np.save(feat_path, embs[:-1, :])
         np.save(names_path, names)  # save query
 
-        # 从路径加载query todo: 这操作？
         path = '{}/query_features.npy'.format(str(self.save_dir))
-        makedir(path)
         query = np.load(path)
-        cos_sim = cosine_similarity(embs, query)
-        max_idx = np.argmax(cos_sim, axis=1)
-        maximum = np.max(cos_sim, axis=1)
-        max_idx[maximum < 0.6] = -1
-        self._logger.info("Succeed extracting features for ReID.")
+
+        self._logger.info("query_features.npy & names.npy is created basing at images. path : ")
 
         return query, names
+
+    # test: 新功能
+    def person_query(self, query_image):
+        '''
+        Arguments:
+            query_feature_vector: 要查询人物的特征向量
+        Returns:
+            idx : index of names, which is matched with query_image
+        '''
+        img = cv2.imread(str(self.save_dir / query_image))
+        query_feature_vector = self.reid_model(img)
+
+        cos_sim = cosine_similarity(self.cus_features, query_feature_vector)
+        # print(cos_sim)
+        max_idx = np.argmax(cos_sim, axis=1) # 每行最大值的索引
+        maximum = np.max(cos_sim, axis=1)
+        max_idx[maximum < 0.6] = -1
+
+        idx = np.argmax(max_idx)
+        # print("RESULT: ", names[idx])
+        return idx
+
 
 # ********************************************************
 if __name__ == '__main__':
