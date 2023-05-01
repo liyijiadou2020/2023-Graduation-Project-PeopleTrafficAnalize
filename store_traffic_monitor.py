@@ -89,39 +89,37 @@ class TrafficMonitor():
         # self._logger.info("args: ", self.args)
 
     def demo(self):
-        # self.in_cam_tracker.tracking()
-        # self.query_feat, self.query_names = self.feature_extract()
         self.query_feat, self.query_names = self.in_cam_tracker.tracking()
         self.in2_cam_tracker.tracking(self.query_feat, self.query_names)
 
-    def feature_extract(self):
-        reid_feature = Reid_feature() # reid model
-        names = []
-        embs = np.ones((1, 512), dtype=np.int)
-        for image_name in os.listdir(self.save_dir_in):
-            img = cv2.imread(os.path.join(self.save_dir_in, image_name))
-            feat = reid_feature(img)  # extract normlized feat
-            pytorch_output = feat.numpy()
-            embs = np.concatenate((pytorch_output, embs), axis=0)
-            names.append(image_name[0:-4])  # 去除.jpg作为顾客的名字
-        names = names[::-1]
-        names.append("None")
-        feat_path = os.path.join(str(self.save_dir), 'query_features')
-        names_path = os.path.join(str(self.save_dir), 'names')
-        np.save(feat_path, embs[:-1, :])
-        np.save(names_path, names)  # save query
-
-        # 从路径加载query todo: 这操作？
-        path = '{}/query_features.npy'.format(str(self.save_dir))
-        makedir(path)
-        query = np.load(path)
-        cos_sim = cosine_similarity(embs, query)
-        max_idx = np.argmax(cos_sim, axis=1)
-        maximum = np.max(cos_sim, axis=1)
-        max_idx[maximum < 0.6] = -1
-        self._logger.info("Succeed extracting features for ReID.")
-
-        return query, names
+    # def feature_extract_from_project_dir(self):
+    #     reid_feature = Reid_feature() # reid model
+    #     names = []
+    #     embs = np.ones((1, 512), dtype=np.int)
+    #     for image_name in os.listdir(self.save_dir_in):
+    #         img = cv2.imread(os.path.join(self.save_dir_in, image_name))
+    #         feat = reid_feature(img)  # extract normlized feat
+    #         pytorch_output = feat.numpy()
+    #         embs = np.concatenate((pytorch_output, embs), axis=0)
+    #         names.append(image_name[0:-4])  # 去除.jpg作为顾客的名字
+    #     names = names[::-1]
+    #     names.append("None")
+    #     feat_path = os.path.join(str(self.save_dir), 'query_features')
+    #     names_path = os.path.join(str(self.save_dir), 'names')
+    #     np.save(feat_path, embs[:-1, :])
+    #     np.save(names_path, names)  # save query
+    #
+    #     # 从路径加载query todo: 这操作？
+    #     path = '{}/query_features.npy'.format(str(self.save_dir))
+    #     makedir(path)
+    #     query = np.load(path)
+    #     cos_sim = cosine_similarity(embs, query)
+    #     max_idx = np.argmax(cos_sim, axis=1)
+    #     maximum = np.max(cos_sim, axis=1)
+    #     max_idx[maximum < 0.6] = -1
+    #     self._logger.info("Succeed extracting features for ReID.")
+    #
+    #     return query, names
 
 # ********************************************************
 if __name__ == '__main__':

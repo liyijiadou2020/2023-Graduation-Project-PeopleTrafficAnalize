@@ -66,7 +66,8 @@ class VideoStreamTracker():
         # 6.销毁窗口 & 打印log
 
     def tracking(self, query_feat=None, query_names=[]):
-        if self.tracker_type_number != 0: # 如果不是入口摄像头，那么在处理之前要更新一下query_feat, query_names
+        # 如果不是入口摄像头，那么在处理之前要更新一下query_feat, query_names
+        if self.tracker_type_number != 0:
             self.update_reid_query(query_feat, query_names)
         paths = {}  # 每一个track的行动轨迹
         last_track_id = -1
