@@ -83,7 +83,10 @@ class VideoStreamTracker():
 
             # yolo detection
             bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model.detect(video_path, img, ori_img, vid_cap)
-            outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)  # TODO: 路径问题，一定要放在test_video下才可以
+            # outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
+            # TODO: deepsort有问题，如果检测不到人的话就会参数出错：ValueError: not enough values to unpack (expected 2, got 0)
+            if len(bbox_xywh) > 0 and len(cls_conf) > 0: # 加上这句，如果没检测到人就直接跳过这一帧
+                outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
 
             # 1.画黄线
             yellow_line = draw_yellow_line(self.p1_ratio, self.p2_ratio, ori_img)
@@ -168,7 +171,7 @@ class VideoStreamTracker():
         # 进店的时候，把人物的图像抠出来
         cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        path = str(self.output_people_img_path + '/track_id-{}.jpg'.format(track_id))
+        path = str(self.output_people_img_path + '/cus{}.jpg'.format(track_id))
         makedir(path)
         cv2.imwrite(path, ROI_person)
         # 打印当前的时间 & 顾客入店信息
