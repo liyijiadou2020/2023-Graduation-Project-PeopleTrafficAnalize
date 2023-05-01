@@ -156,6 +156,9 @@ class VideoStreamTracker():
                                       )
                               )
         cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
+
+        if self.tracker_type_number == 0: # 如果这是入口摄像头，需要提取特征后续使用
+            return self.feature_extract()
         # vid_writer.release()
 
     def customer_enter(self, bbox, ori_img, track_id, yellow_line_in):
@@ -205,3 +208,33 @@ class VideoStreamTracker():
     def update_reid_query(self, features, names):
         self.query_feat = features
         self.query_names = names
+
+    def feature_extract(self):
+        reid_feature = Reid_feature() # reid model
+        names = []
+        embs = np.ones((1, 512), dtype=np.int)
+        for image_name in os.listdir(self.output_people_img_path):
+            img = cv2.imread(os.path.join(self.output_people_img_path, image_name))
+            feat = reid_feature(img)  # extract normlized feat
+            pytorch_output = feat.numpy()
+            embs = np.concatenate((pytorch_output, embs), axis=0)
+            names.append(image_name[0:-4])  # 去除.jpg作为顾客的名字
+        names = names[::-1]
+        names.append("None")
+
+        feat_path = os.path.join(str(self.output_people_img_path), '..', 'query_features')
+        names_path = os.path.join(str(self.output_people_img_path), '..', 'names')
+        np.save(feat_path, embs[:-1, :])
+        np.save(names_path, names)  # save query
+
+        # 从路径加载query todo: 这操作？
+        path = '{}.npy'.format(str(feat_path))
+        makedir(path)
+        query = np.load(path)
+        cos_sim = cosine_similarity(embs, query)
+        max_idx = np.argmax(cos_sim, axis=1)
+        maximum = np.max(cos_sim, axis=1)
+        max_idx[maximum < 0.6] = -1
+        print("Succeed extracting features for ReID.")
+
+        return query, names

@@ -89,8 +89,9 @@ class TrafficMonitor():
         # self._logger.info("args: ", self.args)
 
     def demo(self):
-        self.in_cam_tracker.tracking()
-        self.query_feat, self.query_names = self.feature_extract()
+        # self.in_cam_tracker.tracking()
+        # self.query_feat, self.query_names = self.feature_extract()
+        self.query_feat, self.query_names = self.in_cam_tracker.tracking()
         self.in2_cam_tracker.tracking(self.query_feat, self.query_names)
 
     def feature_extract(self):
