@@ -86,8 +86,10 @@ class TrafficMonitor():
         self.cam_in_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
                                                  self.deepsort, self.dataset_1, None, [],
                                                  self.save_dir_in, True, p1, p2, 0)
-        p2_1 = [0, 0.21]  # 已经还可以了
-        p2_2 = [0.12, 1]
+        # p2_1 = [0, 0.21]
+        # p2_2 = [0.12, 1]
+        p2_1 = [0, 0.21]  # 【如无意外使用这个】已经还可以了
+        p2_2 = [0.08, 1]
 
         # 3 means this camera in store, todo: 'in2' , 'in3' 变量化
         self.cam2_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
