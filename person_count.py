@@ -70,9 +70,6 @@ def makedir(dir_path):
         os.makedirs(dir_path)
 
 def draw_yellow_line(point_1, point_2, ori_img):
-    # line = [(int(0.08 * ori_img.shape[1]), int(0.70 * ori_img.shape[0])),
-    #         (int(0.6 * ori_img.shape[1]), int(0.45 * ori_img.shape[0]))]
-
     line = [( int(point_1[0] * ori_img.shape[1]), int(point_1[1] * ori_img.shape[0])),
             ( int(point_2[0] * ori_img.shape[1]), int(point_2[1] * ori_img.shape[0]))
             ]

@@ -64,7 +64,7 @@ class VideoStreamTracker():
         # 4.绘制统计信息 & 绘制检测框 & 绘制帧数
         # 5.展示图像，输出结果视频
         self.is_display = is_display
-        self.is_save_vid = False # todo: 增加到参数中
+        self.is_save_vid = True # todo: 增加到参数中
         # 6.销毁窗口 & 打印log
 
     def tracking(self, query_feat=None, query_names=[]):
@@ -113,12 +113,15 @@ class VideoStreamTracker():
                     cv2.line(ori_img, yellow_line[0], yellow_line[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
                     already_counted.append(track_id)  # Set already counted for ID to true.
                     angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
+                    print("--> [DEBUG] track_id = 【", track_id, "】  angle = 【", angle, "】")
                     if angle > 0:  # 进店
                         self.up_count += 1
                         if self.tracker_type_number == 0:
                             self.customer_enter(bbox, ori_img, track_id, yellow_line)
+                            print(">>【in】")
                         else: # 功能已经实现，但是要调参
                             self.person_search(bbox, ori_img, track_id)
+                            print("<<【out】")
                     if angle < 0:
                         self.down_count += 1
 

@@ -72,8 +72,8 @@ class TrafficMonitor():
 
         exp_name = 'exp'
         project = ROOT / 'runs/tracks'
-        save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
-        # save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
+        # save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
+        save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
         save_dir = Path(save_dir)
         self.save_dir = save_dir
         self.save_dir_in = str(save_dir / 'in')
@@ -86,8 +86,9 @@ class TrafficMonitor():
         self.cam_in_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
                                                  self.deepsort, self.dataset_1, None, [],
                                                  self.save_dir_in, True, p1, p2, 0)
-        p2_1 = [0.31, 0.50]
-        p2_2 = [0.36, 0.84]
+        p2_1 = [0, 0.21]  # 已经还可以了
+        p2_2 = [0.12, 1]
+
         # 3 means this camera in store, todo: 'in2' , 'in3' 变量化
         self.cam2_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
                                                self.deepsort, self.dataset_2, None, [],
@@ -101,14 +102,14 @@ class TrafficMonitor():
         self._logger.info("args: ", self.args)
 
     def demo(self):
-        self.cus_features, self.cus_names = self.cam_in_tracker.tracking()
+        # self.cus_features, self.cus_names = self.cam_in_tracker.tracking()
         self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
 
-        # self.cam2_tracker.update_reid_query(self.cus_features, self.cus_names)
         self.cam2_tracker.tracking(self.cus_features, self.cus_names)
 
-        self.cam3_tracker.tracking(self.cus_features, self.cus_names)
+        # self.cam3_tracker.tracking(self.cus_features, self.cus_names)
 
+        # --------------- person search
         # name_idx = self.person_query('yoyo.jpg')  # 把需要查询的人物照片放在 self.save_dir，就可以通过函数查询
         # print("Query result: {}".format(self.cus_names[name_idx]))
 
