@@ -6,13 +6,13 @@ import numpy as np
 import torch
 import warnings
 import argparse
-from person_count import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
+from person_count_utils import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
     put_text_to_cv2_img_with_pil, draw_yellow_line, makedir, print_statistics_to_frame, print_newest_info, \
     draw_idx_frame, increment_path, ROOT
 from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
 from utils.general import check_img_size
-from person_detect_yolov5 import YoloPersonDetect
+from yolo_people_detect import YoloPersonDetect
 from deep_sort import build_tracker, DeepReid
 from utils.parser import get_config
 from utils.log import get_logger
@@ -22,7 +22,7 @@ from fast_reid.demo.person_bank import Reid_feature
 from pycallgraph2 import PyCallGraph
 from pycallgraph2.output import GraphvizOutput
 
-from people_tracker import VideoStreamTracker
+from video_stream_tracker import VideoStreamTracker
 from pathlib import Path
 
 def parse_args():

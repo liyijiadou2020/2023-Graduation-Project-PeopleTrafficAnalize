@@ -8,13 +8,13 @@ import re
 import torch
 import warnings
 import argparse
-from person_count import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
+from person_count_utils import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
     put_text_to_cv2_img_with_pil, draw_yellow_line, makedir, print_statistics_to_frame, print_newest_info, \
     draw_idx_frame
 from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
 from utils.general import check_img_size
-from person_detect_yolov5 import YoloPersonDetect
+from yolo_people_detect import YoloPersonDetect
 from deep_sort import build_tracker, DeepReid
 from utils.parser import get_config
 from utils.log import get_logger
@@ -48,7 +48,7 @@ class VideoStreamTracker():
                  query_names,
                  camera_name,
                  output_people_img_path,
-                 p1, p2, tracker_type_number=-1, is_display=True, is_save_vid=False):
+                 p1, p2, tracker_type_number=-1, is_display=False, is_save_vid=False):
         '''
         todo: 默认参数：cus_features - None, cus_names - [],  is_display - True, is_save_vid - False
         parameters:

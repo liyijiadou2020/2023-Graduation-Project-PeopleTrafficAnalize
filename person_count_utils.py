@@ -16,7 +16,7 @@ from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text
 from utils.general import check_img_size
 # from utils.torch_utils import time_synchronized
-from person_detect_yolov5 import YoloPersonDetect
+from yolo_people_detect import YoloPersonDetect
 from deep_sort import build_tracker
 from utils.parser import get_config
 from utils.log import get_logger
