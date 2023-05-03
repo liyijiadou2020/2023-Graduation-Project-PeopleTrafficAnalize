@@ -87,27 +87,27 @@ class TrafficMonitor():
         # 0 means this camera is entering camera
         self.cam1_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
                                                self.deepsort, self.dataset_1, None, [], 'in',
-                                               self.save_dir_in, True, False, p1, p2, 0)
+                                               self.save_dir_in, p1, p2, 0)
         p2_1 = [0.02, 0.21]
         p2_2 = [0.08, 1]
         cam2_name = 'in2'
         # 3 means this camera in store
         self.cam2_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
                                                self.deepsort, self.dataset_2, None, [], cam2_name,
-                                               str(save_dir / cam2_name), True, False, p2_1, p2_2, 3)
+                                               str(save_dir / cam2_name), p2_1, p2_2, 3)
         p3_1 = [0.52, 0.51]
         p3_2 = [0.52, 0.93]
         cam3_name = 'in3'
         self.cam3_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
                                                self.deepsort, self.dataset_3, None, [], cam3_name,
-                                               str(save_dir / cam3_name), True, False, p3_1, p3_2, 3)
+                                               str(save_dir / cam3_name), p3_1, p3_2, 3)
         # self._logger.info("args: ", self.args)
 
     def demo(self):
-        # self.cus_features, self.cus_names = self.cam1_tracker.tracking()
+        self.cus_features, self.cus_names = self.cam1_tracker.tracking()
         self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
         self.cam2_tracker.tracking(self.cus_features, self.cus_names)
-        # self.cam3_tracker.tracking(self.cus_features, self.cus_names)
+        self.cam3_tracker.tracking(self.cus_features, self.cus_names)
         # --------------- person search
         # name_idx = self.person_query('yoyo.jpg')  # 把需要查询的人物照片放在 self.save_dir，就可以通过函数查询
         # print("Query result: {}".format(self.cus_names[name_idx]))

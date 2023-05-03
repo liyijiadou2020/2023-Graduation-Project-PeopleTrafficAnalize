@@ -48,7 +48,7 @@ class VideoStreamTracker():
                  query_names,
                  camera_name,
                  output_people_img_path,
-                 is_display, is_save_vid, p1, p2, tracker_type_number=-1):
+                 p1, p2, tracker_type_number=-1, is_display=True, is_save_vid=False):
         '''
         todo: 默认参数：cus_features - None, cus_names - [],  is_display - True, is_save_vid - False
         parameters:
@@ -218,10 +218,9 @@ class VideoStreamTracker():
         max_idx = np.argmax(cos_sim, axis=1)  # 每行最大值的索引
         maximum = np.max(cos_sim, axis=1)
         print("[ReID DEBUG] maximum = ", maximum)
-        # --- fix bug: 如果搜索不到 ---
         if max(maximum) > 0.4: # 0.5大了
             max_idx[maximum < 0.4] = -1
-            idx = np.argmax(max_idx)  # todo: bug, 没办法检测全是-1的情况
+            idx = np.argmax(max_idx)
             person_name = self.query_names[idx]  # 搜寻得到的
         else:
             person_name = "new-{}".format(track_id)
@@ -229,7 +228,7 @@ class VideoStreamTracker():
         print("[DEBUG-reid] person_name: ", person_name)
         path_to_image = self._save_dir + '/{}.jpg'.format(person_name)
 
-        if os.path.exists(path_to_image): # todo: test - if person-1.jpg exist, save person-1-1.jpg instead of replace
+        if os.path.exists(path_to_image):
             path_to_image = increment_person_name(path_to_image)
 
         makedir(path_to_image)
@@ -244,9 +243,6 @@ class VideoStreamTracker():
             person_name
             , dt
         ))
-
-
-
 
     def draw_info_to_frame(self, angle, last_track_id, ori_img, outputs, total_track):
         ori_img = print_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
@@ -299,11 +295,10 @@ class VideoStreamTracker():
         # 代码读取一个.npy文件，该文件中包含了一个特征向量query，将另外一组特征向量embs与query计算余弦相似度
         path = '{}.npy'.format(str(feat_path))
         query = np.load(path)
-        cos_sim = cosine_similarity(embs, query)
-        max_idx = np.argmax(cos_sim, axis=1)
-        maximum = np.max(cos_sim, axis=1)
-        max_idx[maximum < 0.6] = -1
-        # -------------- 用作reid对比 ？ --------------
+        # cos_sim = cosine_similarity(embs, query)
+        # max_idx = np.argmax(cos_sim, axis=1)
+        # maximum = np.max(cos_sim, axis=1)
+        # max_idx[maximum < 0.6] = -1
         print("Succeed extracting features for ReID.")
 
         return query, names
