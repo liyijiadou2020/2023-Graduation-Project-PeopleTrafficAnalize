@@ -3,6 +3,8 @@ from collections import deque
 import time
 import cv2
 import numpy as np
+import os
+import re
 import torch
 import warnings
 import argparse
@@ -23,6 +25,19 @@ from pathlib import Path
 from pycallgraph2 import PyCallGraph
 from pycallgraph2.output import GraphvizOutput
 
+# test -
+def increment_person_name(person_name):
+    # Increment person name, i.e. person1.jpg --> person1-1.jpg, person1-2.jpg etc.
+    path = os.path.abspath(person_name)  # os-agnostic
+    if (os.path.exists(path)):
+        dirs = [d for d in os.listdir(os.path.dirname(path)) if
+                re.match(rf"{os.path.splitext(os.path.basename(path))[0]}-\d+\.\w+", d)]
+        i = [int(re.search(r"\d+", d).group()) for d in dirs]  # indices
+        n = max(i) + 1 if i else 1  # increment number
+        new_name = f"{os.path.splitext(os.path.basename(path))[0]}-{n}{os.path.splitext(os.path.basename(path))[1]}"
+        return f"{os.path.dirname(path)}{os.path.sep}{new_name}"  # update path
+    else:
+        return str(path)
 
 class VideoStreamTracker():
     def __init__(self, yolo_model,
@@ -31,10 +46,11 @@ class VideoStreamTracker():
                  dataset,
                  query_feat,
                  query_names,
+                 camera_name,
                  output_people_img_path,
-                 is_display, p1, p2, tracker_type_number=-1):
+                 is_display, is_save_vid, p1, p2, tracker_type_number=-1):
         '''
-        todo: 默认参数：cus_features - None, cus_names - [],  is_display - True
+        todo: 默认参数：cus_features - None, cus_names - [],  is_display - True, is_save_vid - False
         parameters:
             cus_features : reid使用的查询库的特征
             output_people_img_path : 将提取出的人物图像放在什么路径下
@@ -64,7 +80,7 @@ class VideoStreamTracker():
         # 4.绘制统计信息 & 绘制检测框 & 绘制帧数
         # 5.展示图像，输出结果视频
         self.is_display = is_display
-        self.is_save_vid = True # todo: 增加到参数中
+        self.is_save_vid = is_save_vid
         # 6.销毁窗口 & 打印log
 
     def tracking(self, query_feat=None, query_names=[]):
@@ -132,7 +148,9 @@ class VideoStreamTracker():
             ori_img = self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, self.total_track)
             # 5.展示图像，输出结果视频
             if self.is_display:
-                cv2.imshow("test", ori_img)
+                cv2.namedWindow("frame", 0) # 可以调整窗口大小
+                # cv2.resizeWindow("frame", 1600, 900)  # 设置长和宽
+                cv2.imshow("frame", ori_img)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
             end_time = time_synchronized()
@@ -192,7 +210,7 @@ class VideoStreamTracker():
             , dt
         ))
 
-    def person_search(self, bbox, ori_img, track_id): # todo: bug, 重识别失败了，why？
+    def person_search(self, bbox, ori_img, track_id):
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         query_feature_vector = self.reid_model(ROI_person)
         # ---- compare -----------
@@ -209,9 +227,13 @@ class VideoStreamTracker():
             person_name = "new-{}".format(track_id)
 
         print("[DEBUG-reid] person_name: ", person_name)
-        path = str(self._save_dir + '/{}.jpg'.format(person_name))
-        makedir(path)
-        cv2.imwrite(path, ROI_person)
+        path_to_image = self._save_dir + '/{}.jpg'.format(person_name)
+
+        if os.path.exists(path_to_image): # todo: test - if person-1.jpg exist, save person-1-1.jpg instead of replace
+            path_to_image = increment_person_name(path_to_image)
+
+        makedir(path_to_image)
+        cv2.imwrite(path_to_image, ROI_person)
 
         # 打印当前的时间 & 顾客入店信息
         current_time = int(time.time())

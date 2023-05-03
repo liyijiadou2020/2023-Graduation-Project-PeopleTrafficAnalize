@@ -40,7 +40,6 @@ ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 # -------------------
 
 
-# 测试，用来建立结果生成目录
 def increment_path(path, exist_ok=True, sep=''):
     # Increment path, i.e. runs/exp --> runs/exp{sep}0, runs/exp{sep}1 etc.
     path = os.path.abspath(path)  # os-agnostic
