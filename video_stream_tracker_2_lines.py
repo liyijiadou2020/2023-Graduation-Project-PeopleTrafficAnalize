@@ -39,7 +39,7 @@ def increment_person_name(person_name):
     else:
         return str(path)
 
-class VideoStreamTracker():
+class VideoStreamTracker_2_Lines():
     def __init__(self, yolo_model,
                  reid_model,
                  deepsort_model,
@@ -48,7 +48,8 @@ class VideoStreamTracker():
                  query_names,
                  camera_name,
                  output_people_img_path,
-                 p1, p2, tracker_type_number=-1, is_display=True, is_save_vid=False):
+                 p1, p2, p3, p4,
+                 tracker_type_number=-1, is_display=True, is_save_vid=False):
         '''
         todo: 默认参数：cus_features - None, cus_names - [],  is_display - True, is_save_vid - False
         parameters:
@@ -71,6 +72,9 @@ class VideoStreamTracker():
         # 1.画黄线
         self.p1_ratio = p1
         self.p2_ratio = p2
+        # -------- 双线法
+        self.p3_ratio = p3
+        self.p4_ratio = p4
         # 2.处理tracks
         self._save_dir = output_people_img_path
         # 3.ReID
@@ -116,6 +120,7 @@ class VideoStreamTracker():
 
             # 1.画黄线
             yellow_line = draw_yellow_line(self.p1_ratio, self.p2_ratio, ori_img)
+            green_line = draw_yellow_line(self.p3_ratio, self.p4_ratio, ori_img, (0, 255, 0))
             # 2. 处理tracks
             for track in outputs:
                 bbox = track[:4]
