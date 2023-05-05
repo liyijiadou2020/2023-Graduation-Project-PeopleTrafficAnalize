@@ -7,7 +7,7 @@ import torch
 import warnings
 import argparse
 from person_count_utils import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
-    put_text_to_cv2_img_with_pil, draw_yellow_line, makedir, print_statistics_to_frame, print_newest_info, \
+    put_text_to_cv2_img_with_pil, draw_line, makedir, print_statistics_to_frame, print_newest_info, \
     draw_idx_frame, increment_path, ROOT
 from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
@@ -22,7 +22,7 @@ from fast_reid.demo.person_bank import Reid_feature
 from pycallgraph2 import PyCallGraph
 from pycallgraph2.output import GraphvizOutput
 
-from video_stream_tracker import VideoStreamTracker
+# from video_stream_tracker import VideoStreamTracker
 from video_stream_tracker_2_lines import VideoStreamTracker_2_Lines
 from pathlib import Path
 
@@ -73,8 +73,8 @@ class TrafficMonitor():
 
         exp_name = 'exp'
         project = ROOT / 'runs/tracks'
-        save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
-        # save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
+        # save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
+        save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
         save_dir = Path(save_dir)
         self.save_dir = save_dir
         makedir(self.save_dir)
@@ -84,18 +84,13 @@ class TrafficMonitor():
         cam3_name = 'in3'
         self.customers_log = {}
         # -----------------------------------
-        # p1 = [0.31, 0.74]
-        # p2 = [1.00, 0.59]
-        p1 = [0.31, 0.74] # in
+        p1 = [0.31, 0.74]
         p2 = [1.00, 0.59]
-        p3 = [0.31, 0.70] # out
+        p3 = [0.31, 0.70]
         p4 = [1.00, 0.55]
         self.save_dir_in = str(save_dir / cam1_name)
         makedir(self.save_dir_in)
         # 0 means this camera is entering camera
-        # self.cam1_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
-        #                                        self.deepsort, self.dataset_1, None, [], cam1_name,
-        #                                        self.save_dir_in, p1, p2, 0)
         self.cam1_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model,
                                                self.deepsort, self.dataset_1, None, [], cam1_name,
                                                self.save_dir_in, p1, p2, p3, p4,
@@ -113,7 +108,7 @@ class TrafficMonitor():
                                                        3)
         p3_1 = [0.52, 0.51]
         p3_2 = [0.52, 0.93]
-        p3_3 = [0.42, 0.51] # outline
+        p3_3 = [0.42, 0.51]
         p3_4 = [0.42, 0.93]
         self.cam3_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model,
                                                self.deepsort, self.dataset_3, None, [], cam3_name,
@@ -136,11 +131,6 @@ class TrafficMonitor():
         sav_txt = open(file="{}/customer_logs.txt".format(self.save_dir), mode="w", encoding="utf-8")
         sav_txt.write(str(self.customers_log))
         sav_txt.close()
-
-        # ---------------------
-        # self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
-        # self.cam2_tracker.tracking(self.cus_features, self.cus_names)
-        # self.cam3_tracker.tracking(self.cus_features, self.cus_names)
         # --------------- person search
         # name_idx = self.person_query('yoyo.jpg')  # 把需要查询的人物照片放在 self.save_dir，就可以通过函数查询
         # print("Query result: {}".format(self.cus_names[name_idx]))

@@ -9,7 +9,7 @@ import torch
 import warnings
 import argparse
 from person_count_utils import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
-    put_text_to_cv2_img_with_pil, draw_yellow_line, makedir, print_statistics_to_frame, print_newest_info, \
+    put_text_to_cv2_img_with_pil, draw_line, makedir, print_statistics_to_frame, print_newest_info, \
     draw_idx_frame, print_newest_info_binary_lines
 from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
@@ -49,7 +49,7 @@ class VideoStreamTracker_2_Lines():
                  camera_name,
                  output_people_img_path,
                  p1, p2, p3, p4,
-                 tracker_type_number=-1, is_display=False, is_save_vid=True):
+                 tracker_type_number=-1, is_display=True, is_save_vid=False):
         '''
         todo: 默认参数：cus_features - None, cus_names - [],  is_display - True, is_save_vid - False
         parameters:
@@ -115,13 +115,12 @@ class VideoStreamTracker_2_Lines():
 
             # yolo detection
             bbox_xywh, cls_conf, cls_ids, xy = self.yolo_model.detect(video_path, img, ori_img, vid_cap)
-            # outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
-            if len(bbox_xywh) > 0 and len(cls_conf) > 0: # 加上这句，如果没检测到人就直接跳过这一帧
+            if len(bbox_xywh) > 0: # 加上这句，如果没检测到人就直接跳过这一帧
                 outputs, features = self.deepsort.update(bbox_xywh, cls_conf, ori_img)
 
             # 1.画黄线
-            yellow_line = draw_yellow_line(self.p1_ratio, self.p2_ratio, ori_img)
-            green_line = draw_yellow_line(self.p3_ratio, self.p4_ratio, ori_img, (0, 255, 0))
+            yellow_line = draw_line(self.p1_ratio, self.p2_ratio, ori_img)
+            green_line = draw_line(self.p3_ratio, self.p4_ratio, ori_img, (0, 255, 0))
             # 2. 处理tracks
             for track in outputs:
                 bbox = track[:4]
