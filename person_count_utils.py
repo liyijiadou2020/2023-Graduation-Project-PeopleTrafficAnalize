@@ -108,6 +108,20 @@ def print_newest_info(angle, last_track_id, ori_img):
     ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
     return ori_img
 
+def print_newest_info_binary_lines(is_in, last_track_id, ori_img):
+    current_time = int(time.time())
+    localtime = time.localtime(current_time)
+    dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+    # ---------------------------------------
+    label = "TIME: {} | Person №{} crossed yellow line. [{}]".format(dt, str(last_track_id),
+                                                                     str("IN") if is_in else str('OUT'))
+    t_size = get_size_with_pil(label, 25)
+    x1 = 20
+    y1 = 900
+    color = compute_color_for_labels(2)
+    ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
+    return ori_img
+
 def intersect(A, B, C, D):
     return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
 

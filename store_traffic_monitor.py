@@ -73,8 +73,8 @@ class TrafficMonitor():
 
         exp_name = 'exp'
         project = ROOT / 'runs/tracks'
-        # save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
-        save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
+        save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
+        # save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
         save_dir = Path(save_dir)
         self.save_dir = save_dir
         makedir(self.save_dir)
@@ -84,14 +84,22 @@ class TrafficMonitor():
         cam3_name = 'in3'
         self.customers_log = {}
         # -----------------------------------
-        p1 = [0.31, 0.74]
+        # p1 = [0.31, 0.74]
+        # p2 = [1.00, 0.59]
+        p1 = [0.31, 0.74] # in
         p2 = [1.00, 0.59]
+        p3 = [0.31, 0.70] # out
+        p4 = [1.00, 0.55]
         self.save_dir_in = str(save_dir / cam1_name)
         makedir(self.save_dir_in)
         # 0 means this camera is entering camera
-        self.cam1_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
+        # self.cam1_tracker = VideoStreamTracker(self.yolo_model, self.reid_model,
+        #                                        self.deepsort, self.dataset_1, None, [], cam1_name,
+        #                                        self.save_dir_in, p1, p2, 0)
+        self.cam1_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model,
                                                self.deepsort, self.dataset_1, None, [], cam1_name,
-                                               self.save_dir_in, p1, p2, 0)
+                                               self.save_dir_in, p1, p2, p3, p4,
+                                                       0)
 
         # todo:其实可以采用双线法，这样就绝对不会出现误判的情况了
         p2_1 = [0.02, 0.21]
@@ -116,9 +124,9 @@ class TrafficMonitor():
     def demo(self):
         # self.cus_features, self.cus_names = self.cam1_tracker.tracking()
         # -------- test --------
-        # self.cus_features, self.cus_names, self.customers_log = self.cam1_tracker.tracking()
+        self.cus_features, self.cus_names, self.customers_log = self.cam1_tracker.tracking()
 
-        self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
+        # self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
         self.cam2_tracker.customer_logs = self.customers_log
         self.customers_log = self.cam2_tracker.tracking(self.cus_features, self.cus_names)
 

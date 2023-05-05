@@ -10,7 +10,7 @@ import warnings
 import argparse
 from person_count_utils import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
     put_text_to_cv2_img_with_pil, draw_yellow_line, makedir, print_statistics_to_frame, print_newest_info, \
-    draw_idx_frame
+    draw_idx_frame, print_newest_info_binary_lines
 from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
 from utils.general import check_img_size
@@ -49,7 +49,7 @@ class VideoStreamTracker_2_Lines():
                  camera_name,
                  output_people_img_path,
                  p1, p2, p3, p4,
-                 tracker_type_number=-1, is_display=True, is_save_vid=False):
+                 tracker_type_number=-1, is_display=False, is_save_vid=True):
         '''
         todo: 默认参数：cus_features - None, cus_names - [],  is_display - True, is_save_vid - False
         parameters:
@@ -102,7 +102,8 @@ class VideoStreamTracker_2_Lines():
 
         paths = {}  # 每一个track的行动轨迹
         last_track_id = -1
-        angle = -1
+        # angle = -1
+        is_in = False
         already_counted = deque(maxlen=100)  # temporary memory for storing counted IDs
 
         vid_path = None
@@ -137,40 +138,29 @@ class VideoStreamTracker_2_Lines():
 
                 if intersect(midpoint_1, midpoint_0, yellow_line[0], yellow_line[1]) \
                         and track_id not in already_counted:
+                    is_in = True
                     self.total_counter += 1
                     last_track_id = track_id;  # 记录触线者的ID
                     cv2.line(ori_img, yellow_line[0], yellow_line[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
                     already_counted.append(track_id)  # Set already counted for ID to true.
-                    angle = vector_angle(origin_midpoint, origin_previous_midpoint)  # 计算角度，判断向上还是向下走
-                    if angle > 0:  # 进店
-                        self.up_count += 1
-                        if self.tracker_type_number == 0: # 入口摄像机，记录所有进入的人
-                            person_name, person_feature = self.customer_enter(bbox, ori_img, track_id, yellow_line)
-                            # ------------ 记录log ----------
-                            current_time = int(time.time())
-                            localtime = time.localtime(current_time)
-                            dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-                            self.customer_logs[person_name] = { self.camera_name : dt }
-                            # -------------------------------
-                        else:
-                            person_name, person_feature = self.person_search(bbox, ori_img, track_id)
-                            # ------- 记录 log -----
-                            current_time = int(time.time())
-                            localtime = time.localtime(current_time)
-                            dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-                            if person_name not in self.customer_logs:
-                                self.customer_logs[person_name] = { self.camera_name : dt }
-                            else:
-                                self.customer_logs[person_name][self.camera_name] = dt
-                            # -------------------------------
-                    if angle < 0:
-                        self.down_count += 1
+                    self.up_count += 1
+                    self.write_to_customers_log(bbox, ori_img, track_id, yellow_line) # todo:test
+                elif intersect(midpoint_1, midpoint_0, green_line[0], green_line[1]) \
+                        and track_id not in already_counted:
+                    is_in = False
+                    self.total_counter += 1
+                    last_track_id = track_id;  # 记录触线者的ID
+                    cv2.line(ori_img, green_line[0], green_line[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
+                    already_counted.append(track_id)  # Set already counted for ID to true.
+                    self.down_count += 1
 
             # 3.重识别结果 - Enter摄像头不需要管这个
             if self.tracker_type_number != 0:
                 img, match_names = self.draw_reid_result_to_frame(features, ori_img, xy)
             # 4.绘制统计信息
-            ori_img = self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, self.total_track)
+            # ori_img = self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, self.total_track)
+            ori_img =self.draw_info_to_frame_binary_lines(is_in, last_track_id, ori_img, outputs, self.total_track)
+
             # 5.展示图像，输出结果视频
             if self.is_display:
                 cv2.namedWindow("frame", 0) # 可以调整窗口大小
@@ -220,6 +210,27 @@ class VideoStreamTracker_2_Lines():
             return self.customer_logs
 
         # vid_writer.release()
+
+    def write_to_customers_log(self, bbox, ori_img, track_id, yellow_line):
+        # --0-0-0-0--------------
+        if self.tracker_type_number == 0:  # 入口摄像机，记录所有进入的人
+            person_name, person_feature = self.customer_enter(bbox, ori_img, track_id, yellow_line)
+            # ------------ 记录log ----------
+            current_time = int(time.time())
+            localtime = time.localtime(current_time)
+            dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+            self.customer_logs[person_name] = {self.camera_name: dt}
+            # -------------------------------
+        else:
+            person_name, person_feature = self.person_search(bbox, ori_img, track_id)
+            current_time = int(time.time())
+            localtime = time.localtime(current_time)
+            dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+            if person_name not in self.customer_logs:
+                self.customer_logs[person_name] = {self.camera_name: dt}
+            else:
+                self.customer_logs[person_name][self.camera_name] = dt
+        # --0-0-0-0--------------
 
     def customer_enter(self, bbox, ori_img, track_id, yellow_line_in):
         # todo: 把撞线人的特征输出来 & 记录入店的时间
@@ -283,11 +294,26 @@ class VideoStreamTracker_2_Lines():
         person_feature = self.reid_model(ROI_person)
         return person_name, person_feature
 
+    # todo: to delete
     def draw_info_to_frame(self, angle, last_track_id, ori_img, outputs, total_track):
         ori_img = print_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
         ori_img = draw_idx_frame(ori_img, self.idx_frame)
         if last_track_id >= 0:
             ori_img = print_newest_info(angle, last_track_id, ori_img)  # 打印撞线人的信息
+        if len(outputs) > 0:  # 展示跟踪结果
+            bbox_tlwh = []
+            bbox_xyxy = outputs[:, :4]
+            identities = outputs[:, -1]
+            draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
+            for bb_xyxy in bbox_xyxy:
+                bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
+        return ori_img
+
+    def draw_info_to_frame_binary_lines(self, is_in, last_track_id, ori_img, outputs, total_track):
+        ori_img = print_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
+        ori_img = draw_idx_frame(ori_img, self.idx_frame)
+        if last_track_id >= 0:
+            ori_img = print_newest_info_binary_lines(is_in, last_track_id, ori_img)  # 打印撞线人的信息
         if len(outputs) > 0:  # 展示跟踪结果
             bbox_tlwh = []
             bbox_xyxy = outputs[:, :4]
