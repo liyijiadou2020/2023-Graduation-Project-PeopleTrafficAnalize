@@ -94,9 +94,6 @@ if __name__ == '__main__':
     demo = FeatureExtractionDemo(cfg, parallel=args.parallel)
 
     PathManager.mkdirs(args.output)
-    # onnx_output = np.load('../tools/deploy/onnx_output/0065_c6s1_009501_02.npy')
-    # onnx_output = np.vstack((onnx_output, onnx_output))
-    # print(onnx_output.shape)
 
     if args.input:
         while True:

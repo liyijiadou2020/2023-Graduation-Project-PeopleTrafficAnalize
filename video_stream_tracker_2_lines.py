@@ -1,29 +1,17 @@
-import os
+# import os
 from collections import deque
 import time
 import cv2
 import numpy as np
 import os
 import re
-import torch
-import warnings
-import argparse
 from person_count_utils import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
     put_text_to_cv2_img_with_pil, draw_line, makedir, print_statistics_to_frame, print_newest_info, \
     draw_idx_frame, print_newest_info_binary_lines
-from utils.datasets import LoadStreams, LoadImages
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
-from utils.general import check_img_size
-from yolo_people_detect import YoloPersonDetect
-from deep_sort import build_tracker, DeepReid
-from utils.parser import get_config
-from utils.log import get_logger
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 from sklearn.metrics.pairwise import cosine_similarity
-from fast_reid.demo.person_bank import Reid_feature
 from pathlib import Path
-from pycallgraph2 import PyCallGraph
-from pycallgraph2.output import GraphvizOutput
 
 # test -
 def increment_person_name(person_name):
@@ -83,7 +71,7 @@ class VideoStreamTracker_2_Lines():
         self.query_names = query_names
         # ------- 记录触线时间 -------
         self.camera_name = camera_name
-        self.customer_logs = {}
+        self.customers_log = {}
         # --------------------------
         # 4.绘制统计信息 & 绘制检测框 & 绘制帧数
         self.total_frame = 0
@@ -203,10 +191,10 @@ class VideoStreamTracker_2_Lines():
 
         if self.tracker_type_number == 0: # 如果这是入口摄像头，需要提取特征后续使用
             feats, names = self.feature_extract()
-            customer_logs = self.customer_logs
+            customer_logs = self.customers_log
             return feats, names, customer_logs
         else:
-            return self.customer_logs
+            return self.customers_log
 
         # vid_writer.release()
 
@@ -218,17 +206,17 @@ class VideoStreamTracker_2_Lines():
             current_time = int(time.time())
             localtime = time.localtime(current_time)
             dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-            self.customer_logs[person_name] = {self.camera_name: dt}
+            self.customers_log[person_name] = {self.camera_name: dt}
             # -------------------------------
         else:
             person_name, person_feature = self.person_search(bbox, ori_img, track_id)
             current_time = int(time.time())
             localtime = time.localtime(current_time)
             dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-            if person_name not in self.customer_logs:
-                self.customer_logs[person_name] = {self.camera_name: dt}
+            if person_name not in self.customers_log:
+                self.customers_log[person_name] = {self.camera_name: dt}
             else:
-                self.customer_logs[person_name][self.camera_name] = dt
+                self.customers_log[person_name][self.camera_name] = dt
         # --0-0-0-0--------------
 
     def customer_enter(self, bbox, ori_img, track_id, yellow_line_in):
@@ -367,4 +355,4 @@ class VideoStreamTracker_2_Lines():
         return feats, names
 
     def get_customer_logs(self):
-        return self.customer_logs
+        return self.customers_log

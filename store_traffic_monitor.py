@@ -1,28 +1,22 @@
 import os
-from collections import deque
-import time
 import cv2
 import numpy as np
 import torch
 import warnings
 import argparse
-from person_count_utils import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
-    put_text_to_cv2_img_with_pil, draw_line, makedir, print_statistics_to_frame, print_newest_info, \
+from person_count_utils import \
+    tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
+    put_text_to_cv2_img_with_pil, draw_line, makedir, print_statistics_to_frame, \
+    print_newest_info, \
     draw_idx_frame, increment_path, ROOT
 from utils.datasets import LoadStreams, LoadImages
-from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
 from utils.general import check_img_size
 from yolo_people_detect import YoloPersonDetect
 from deep_sort import build_tracker, DeepReid
 from utils.parser import get_config
 from utils.log import get_logger
-from utils.torch_utils import select_device, load_classifier, time_synchronized
 from sklearn.metrics.pairwise import cosine_similarity
 from fast_reid.demo.person_bank import Reid_feature
-from pycallgraph2 import PyCallGraph
-from pycallgraph2.output import GraphvizOutput
-
-# from video_stream_tracker import VideoStreamTracker
 from video_stream_tracker_2_lines import VideoStreamTracker_2_Lines
 from pathlib import Path
 
@@ -95,8 +89,6 @@ class TrafficMonitor():
                                                self.deepsort, self.dataset_1, None, [], cam1_name,
                                                self.save_dir_in, p1, p2, p3, p4,
                                                        0)
-
-        # todo:其实可以采用双线法，这样就绝对不会出现误判的情况了
         p2_1 = [0.02, 0.21]
         p2_2 = [0.08, 1]
         p2_3 = [0, 0.21]
@@ -122,13 +114,13 @@ class TrafficMonitor():
         self.cus_features, self.cus_names, self.customers_log = self.cam1_tracker.tracking()
 
         # self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
-        self.cam2_tracker.customer_logs = self.customers_log
+        self.cam2_tracker.customers_log = self.customers_log
         self.customers_log = self.cam2_tracker.tracking(self.cus_features, self.cus_names)
 
-        self.cam3_tracker.customer_logs = self.customers_log
+        self.cam3_tracker.customers_log = self.customers_log
         self.customers_log = self.cam3_tracker.tracking(self.cus_features, self.cus_names)
 
-        sav_txt = open(file="{}/customer_logs.txt".format(self.save_dir), mode="w", encoding="utf-8")
+        sav_txt = open(file="{}/customers_log.txt".format(self.save_dir), mode="w", encoding="utf-8")
         sav_txt.write(str(self.customers_log))
         sav_txt.close()
         # --------------- person search
