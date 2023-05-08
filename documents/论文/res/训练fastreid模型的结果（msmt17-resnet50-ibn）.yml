@@ -1,0 +1,134 @@
+[05/08 00:38:27] fastreid.utils.checkpoint INFO: No checkpoint found. Training model from scratch
+[05/08 00:38:27] fastreid.engine.train_loop INFO: Starting training from epoch 0
+[05/08 00:41:36] fastreid.utils.events INFO:  eta: 13:56:56  epoch/iter: 0/199  total_loss: 8.52  loss_cls: 6.854  loss_triplet: 1.645  time: 0.8950  data_time: 0.0010  lr: 6.62e-05  max_mem: 2539M
+[05/08 00:44:42] fastreid.utils.events INFO:  eta: 14:00:17  epoch/iter: 0/399  total_loss: 6.504  loss_cls: 5.915  loss_triplet: 0.6125  time: 0.8998  data_time: 0.0008  lr: 9.77e-05  max_mem: 2539M
+[05/08 00:45:49] fastreid.utils.events INFO:  eta: 14:00:03  epoch/iter: 0/471  total_loss: 5.791  loss_cls: 5.264  loss_triplet: 0.5316  time: 0.9000  data_time: 0.0013  lr: 1.09e-04  max_mem: 2539M
+[05/08 00:47:47] fastreid.utils.events INFO:  eta: 13:58:57  epoch/iter: 1/599  total_loss: 5.353  loss_cls: 4.942  loss_triplet: 0.4268  time: 0.9002  data_time: 0.0010  lr: 1.29e-04  max_mem: 2539M
+[05/08 00:50:53] fastreid.utils.events INFO:  eta: 13:56:58  epoch/iter: 1/799  total_loss: 3.999  loss_cls: 3.621  loss_triplet: 0.3584  time: 0.9007  data_time: 0.0008  lr: 1.61e-04  max_mem: 2539M
+[05/08 00:53:07] fastreid.utils.events INFO:  eta: 13:55:40  epoch/iter: 1/943  total_loss: 3.09  loss_cls: 2.788  loss_triplet: 0.3242  time: 0.9018  data_time: 0.0013  lr: 1.83e-04  max_mem: 2539M
+[05/08 00:53:59] fastreid.utils.events INFO:  eta: 13:55:14  epoch/iter: 2/999  total_loss: 3.22  loss_cls: 2.906  loss_triplet: 0.3058  time: 0.9025  data_time: 0.0011  lr: 1.92e-04  max_mem: 2539M
+[05/08 00:57:09] fastreid.utils.events INFO:  eta: 13:54:48  epoch/iter: 2/1199  total_loss: 2.735  loss_cls: 2.451  loss_triplet: 0.2704  time: 0.9059  data_time: 0.0009  lr: 2.24e-04  max_mem: 2539M
+[05/08 01:00:18] fastreid.utils.events INFO:  eta: 13:56:13  epoch/iter: 2/1399  total_loss: 2.255  loss_cls: 2.025  loss_triplet: 0.2657  time: 0.9081  data_time: 0.0014  lr: 2.55e-04  max_mem: 2539M
+[05/08 01:00:33] fastreid.utils.events INFO:  eta: 13:56:34  epoch/iter: 2/1415  total_loss: 2.266  loss_cls: 2.028  loss_triplet: 0.2663  time: 0.9083  data_time: 0.0012  lr: 2.58e-04  max_mem: 2539M
+[05/08 01:03:27] fastreid.utils.events INFO:  eta: 13:58:42  epoch/iter: 3/1599  total_loss: 2.248  loss_cls: 2  loss_triplet: 0.2293  time: 0.9094  data_time: 0.0010  lr: 2.87e-04  max_mem: 2539M
+[05/08 01:06:35] fastreid.utils.events INFO:  eta: 13:57:20  epoch/iter: 3/1799  total_loss: 2.038  loss_cls: 1.777  loss_triplet: 0.2454  time: 0.9102  data_time: 0.0012  lr: 3.18e-04  max_mem: 2539M
+[05/08 01:07:58] fastreid.utils.events INFO:  eta: 13:56:19  epoch/iter: 3/1887  total_loss: 2.057  loss_cls: 1.841  loss_triplet: 0.2377  time: 0.9106  data_time: 0.0012  lr: 3.32e-04  max_mem: 2539M
+[05/08 01:09:48] fastreid.utils.events INFO:  eta: 13:56:37  epoch/iter: 4/1999  total_loss: 2.066  loss_cls: 1.854  loss_triplet: 0.2187  time: 0.9133  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:13:00] fastreid.utils.events INFO:  eta: 13:56:46  epoch/iter: 4/2199  total_loss: 1.904  loss_cls: 1.668  loss_triplet: 0.2318  time: 0.9174  data_time: 0.0015  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:15:33] fastreid.utils.events INFO:  eta: 14:01:13  epoch/iter: 4/2359  total_loss: 1.958  loss_cls: 1.753  loss_triplet: 0.2076  time: 0.9200  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:16:12] fastreid.utils.events INFO:  eta: 14:03:28  epoch/iter: 5/2399  total_loss: 1.955  loss_cls: 1.751  loss_triplet: 0.1963  time: 0.9208  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:19:26] fastreid.utils.events INFO:  eta: 14:10:14  epoch/iter: 5/2599  total_loss: 1.804  loss_cls: 1.597  loss_triplet: 0.2038  time: 0.9247  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:22:38] fastreid.utils.events INFO:  eta: 14:17:12  epoch/iter: 5/2799  total_loss: 1.793  loss_cls: 1.618  loss_triplet: 0.1796  time: 0.9274  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:23:09] fastreid.utils.events INFO:  eta: 14:17:28  epoch/iter: 5/2831  total_loss: 1.8  loss_cls: 1.62  loss_triplet: 0.1749  time: 0.9278  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:25:50] fastreid.utils.events INFO:  eta: 14:16:04  epoch/iter: 6/2999  total_loss: 1.741  loss_cls: 1.559  loss_triplet: 0.1782  time: 0.9295  data_time: 0.0008  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:29:02] fastreid.utils.events INFO:  eta: 14:12:15  epoch/iter: 6/3199  total_loss: 1.732  loss_cls: 1.554  loss_triplet: 0.1732  time: 0.9314  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:30:42] fastreid.utils.events INFO:  eta: 14:11:11  epoch/iter: 6/3303  total_loss: 1.735  loss_cls: 1.562  loss_triplet: 0.1633  time: 0.9322  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:32:14] fastreid.utils.events INFO:  eta: 14:09:57  epoch/iter: 7/3399  total_loss: 1.711  loss_cls: 1.536  loss_triplet: 0.1704  time: 0.9332  data_time: 0.0008  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:35:24] fastreid.utils.events INFO:  eta: 14:01:53  epoch/iter: 7/3599  total_loss: 1.692  loss_cls: 1.511  loss_triplet: 0.1815  time: 0.9340  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:38:10] fastreid.utils.events INFO:  eta: 13:55:31  epoch/iter: 7/3775  total_loss: 1.658  loss_cls: 1.504  loss_triplet: 0.1525  time: 0.9344  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:38:32] fastreid.utils.events INFO:  eta: 13:54:32  epoch/iter: 8/3799  total_loss: 1.654  loss_cls: 1.503  loss_triplet: 0.1541  time: 0.9344  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:41:40] fastreid.utils.events INFO:  eta: 13:48:58  epoch/iter: 8/3999  total_loss: 1.659  loss_cls: 1.489  loss_triplet: 0.1738  time: 0.9347  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:44:48] fastreid.utils.events INFO:  eta: 13:43:05  epoch/iter: 8/4199  total_loss: 1.613  loss_cls: 1.473  loss_triplet: 0.1427  time: 0.9349  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:45:33] fastreid.utils.events INFO:  eta: 13:41:53  epoch/iter: 8/4247  total_loss: 1.613  loss_cls: 1.466  loss_triplet: 0.1448  time: 0.9350  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:47:56] fastreid.utils.events INFO:  eta: 13:37:59  epoch/iter: 9/4399  total_loss: 1.604  loss_cls: 1.438  loss_triplet: 0.1688  time: 0.9351  data_time: 0.0015  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:51:04] fastreid.utils.events INFO:  eta: 13:33:52  epoch/iter: 9/4599  total_loss: 1.604  loss_cls: 1.47  loss_triplet: 0.1414  time: 0.9352  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:52:56] fastreid.utils.events INFO:  eta: 13:31:31  epoch/iter: 9/4719  total_loss: 1.622  loss_cls: 1.466  loss_triplet: 0.1558  time: 0.9352  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:54:11] fastreid.utils.events INFO:  eta: 13:30:11  epoch/iter: 10/4799  total_loss: 1.611  loss_cls: 1.442  loss_triplet: 0.1663  time: 0.9353  data_time: 0.0017  lr: 3.50e-04  max_mem: 2539M
+[05/08 01:57:19] fastreid.utils.events INFO:  eta: 13:26:47  epoch/iter: 10/4999  total_loss: 1.633  loss_cls: 1.489  loss_triplet: 0.1423  time: 0.9354  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:00:19] fastreid.utils.events INFO:  eta: 13:23:35  epoch/iter: 10/5191  total_loss: 1.597  loss_cls: 1.444  loss_triplet: 0.1488  time: 0.9355  data_time: 0.0008  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:00:26] fastreid.utils.events INFO:  eta: 13:23:27  epoch/iter: 11/5199  total_loss: 1.599  loss_cls: 1.444  loss_triplet: 0.1507  time: 0.9355  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:03:34] fastreid.utils.events INFO:  eta: 13:20:24  epoch/iter: 11/5399  total_loss: 1.586  loss_cls: 1.45  loss_triplet: 0.1439  time: 0.9356  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:06:41] fastreid.utils.events INFO:  eta: 13:17:25  epoch/iter: 11/5599  total_loss: 1.589  loss_cls: 1.436  loss_triplet: 0.1479  time: 0.9357  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:07:41] fastreid.utils.events INFO:  eta: 13:16:27  epoch/iter: 11/5663  total_loss: 1.571  loss_cls: 1.414  loss_triplet: 0.1554  time: 0.9357  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:09:49] fastreid.utils.events INFO:  eta: 13:14:19  epoch/iter: 12/5799  total_loss: 1.584  loss_cls: 1.43  loss_triplet: 0.1473  time: 0.9358  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:12:57] fastreid.utils.events INFO:  eta: 13:11:11  epoch/iter: 12/5999  total_loss: 1.555  loss_cls: 1.419  loss_triplet: 0.1314  time: 0.9359  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:15:04] fastreid.utils.events INFO:  eta: 13:09:06  epoch/iter: 12/6135  total_loss: 1.554  loss_cls: 1.397  loss_triplet: 0.1479  time: 0.9359  data_time: 0.0014  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:16:04] fastreid.utils.events INFO:  eta: 13:08:04  epoch/iter: 13/6199  total_loss: 1.571  loss_cls: 1.42  loss_triplet: 0.1479  time: 0.9359  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:19:12] fastreid.utils.events INFO:  eta: 13:04:50  epoch/iter: 13/6399  total_loss: 1.545  loss_cls: 1.409  loss_triplet: 0.1292  time: 0.9360  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:22:20] fastreid.utils.events INFO:  eta: 13:01:43  epoch/iter: 13/6599  total_loss: 1.552  loss_cls: 1.39  loss_triplet: 0.1547  time: 0.9360  data_time: 0.0016  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:22:27] fastreid.utils.events INFO:  eta: 13:01:37  epoch/iter: 13/6607  total_loss: 1.552  loss_cls: 1.391  loss_triplet: 0.1507  time: 0.9360  data_time: 0.0015  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:25:27] fastreid.utils.events INFO:  eta: 12:58:46  epoch/iter: 14/6799  total_loss: 1.54  loss_cls: 1.41  loss_triplet: 0.1209  time: 0.9361  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:28:35] fastreid.utils.events INFO:  eta: 12:55:25  epoch/iter: 14/6999  total_loss: 1.517  loss_cls: 1.372  loss_triplet: 0.1318  time: 0.9361  data_time: 0.0015  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:29:50] fastreid.utils.events INFO:  eta: 12:54:16  epoch/iter: 14/7079  total_loss: 1.538  loss_cls: 1.386  loss_triplet: 0.1352  time: 0.9361  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:31:42] fastreid.utils.events INFO:  eta: 12:52:19  epoch/iter: 15/7199  total_loss: 1.538  loss_cls: 1.408  loss_triplet: 0.1268  time: 0.9362  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:34:50] fastreid.utils.events INFO:  eta: 12:49:08  epoch/iter: 15/7399  total_loss: 1.535  loss_cls: 1.382  loss_triplet: 0.1486  time: 0.9362  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:37:12] fastreid.utils.events INFO:  eta: 12:46:46  epoch/iter: 15/7551  total_loss: 1.527  loss_cls: 1.391  loss_triplet: 0.1373  time: 0.9362  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:37:57] fastreid.utils.events INFO:  eta: 12:45:58  epoch/iter: 16/7599  total_loss: 1.54  loss_cls: 1.406  loss_triplet: 0.1308  time: 0.9362  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:41:05] fastreid.utils.events INFO:  eta: 12:42:38  epoch/iter: 16/7799  total_loss: 1.488  loss_cls: 1.366  loss_triplet: 0.1263  time: 0.9362  data_time: 0.0008  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:44:12] fastreid.utils.events INFO:  eta: 12:39:31  epoch/iter: 16/7999  total_loss: 1.513  loss_cls: 1.383  loss_triplet: 0.1284  time: 0.9363  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:44:35] fastreid.utils.events INFO:  eta: 12:39:08  epoch/iter: 16/8023  total_loss: 1.517  loss_cls: 1.393  loss_triplet: 0.127  time: 0.9363  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:47:20] fastreid.utils.events INFO:  eta: 12:36:19  epoch/iter: 17/8199  total_loss: 1.502  loss_cls: 1.374  loss_triplet: 0.1303  time: 0.9363  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:50:27] fastreid.utils.events INFO:  eta: 12:33:02  epoch/iter: 17/8399  total_loss: 1.516  loss_cls: 1.372  loss_triplet: 0.1342  time: 0.9363  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:51:57] fastreid.utils.events INFO:  eta: 12:31:31  epoch/iter: 17/8495  total_loss: 1.533  loss_cls: 1.409  loss_triplet: 0.1318  time: 0.9363  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:53:34] fastreid.utils.events INFO:  eta: 12:29:54  epoch/iter: 18/8599  total_loss: 1.508  loss_cls: 1.384  loss_triplet: 0.1274  time: 0.9363  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:56:42] fastreid.utils.events INFO:  eta: 12:26:45  epoch/iter: 18/8799  total_loss: 1.507  loss_cls: 1.361  loss_triplet: 0.1361  time: 0.9363  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:59:19] fastreid.utils.events INFO:  eta: 12:24:07  epoch/iter: 18/8967  total_loss: 1.51  loss_cls: 1.385  loss_triplet: 0.1246  time: 0.9364  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 02:59:49] fastreid.utils.events INFO:  eta: 12:23:37  epoch/iter: 19/8999  total_loss: 1.501  loss_cls: 1.381  loss_triplet: 0.1209  time: 0.9364  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:02:57] fastreid.utils.events INFO:  eta: 12:20:24  epoch/iter: 19/9199  total_loss: 1.469  loss_cls: 1.335  loss_triplet: 0.129  time: 0.9364  data_time: 0.0016  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:06:04] fastreid.utils.events INFO:  eta: 12:17:27  epoch/iter: 19/9399  total_loss: 1.479  loss_cls: 1.372  loss_triplet: 0.1104  time: 0.9364  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:06:41] fastreid.utils.events INFO:  eta: 12:16:51  epoch/iter: 19/9439  total_loss: 1.462  loss_cls: 1.351  loss_triplet: 0.1078  time: 0.9364  data_time: 0.0011  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:09:11] fastreid.utils.events INFO:  eta: 12:14:05  epoch/iter: 20/9599  total_loss: 1.45  loss_cls: 1.327  loss_triplet: 0.1207  time: 0.9364  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:12:19] fastreid.utils.events INFO:  eta: 12:10:54  epoch/iter: 20/9799  total_loss: 1.498  loss_cls: 1.375  loss_triplet: 0.1126  time: 0.9364  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:14:03] fastreid.utils.events INFO:  eta: 12:09:08  epoch/iter: 20/9911  total_loss: 1.474  loss_cls: 1.356  loss_triplet: 0.1119  time: 0.9364  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:15:26] fastreid.utils.events INFO:  eta: 12:07:38  epoch/iter: 21/9999  total_loss: 1.474  loss_cls: 1.344  loss_triplet: 0.1238  time: 0.9364  data_time: 0.0008  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:18:33] fastreid.utils.events INFO:  eta: 12:04:28  epoch/iter: 21/10199  total_loss: 1.474  loss_cls: 1.37  loss_triplet: 0.122  time: 0.9364  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:21:25] fastreid.utils.events INFO:  eta: 12:01:20  epoch/iter: 21/10383  total_loss: 1.442  loss_cls: 1.331  loss_triplet: 0.1098  time: 0.9363  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:21:40] fastreid.utils.events INFO:  eta: 12:01:04  epoch/iter: 22/10399  total_loss: 1.441  loss_cls: 1.328  loss_triplet: 0.1125  time: 0.9363  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:24:47] fastreid.utils.events INFO:  eta: 11:57:53  epoch/iter: 22/10599  total_loss: 1.453  loss_cls: 1.334  loss_triplet: 0.1204  time: 0.9363  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:27:54] fastreid.utils.events INFO:  eta: 11:54:37  epoch/iter: 22/10799  total_loss: 1.449  loss_cls: 1.341  loss_triplet: 0.1108  time: 0.9363  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:28:46] fastreid.utils.events INFO:  eta: 11:53:41  epoch/iter: 22/10855  total_loss: 1.445  loss_cls: 1.332  loss_triplet: 0.1148  time: 0.9363  data_time: 0.0008  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:31:01] fastreid.utils.events INFO:  eta: 11:51:16  epoch/iter: 23/10999  total_loss: 1.453  loss_cls: 1.33  loss_triplet: 0.1251  time: 0.9362  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:34:08] fastreid.utils.events INFO:  eta: 11:47:51  epoch/iter: 23/11199  total_loss: 1.448  loss_cls: 1.34  loss_triplet: 0.1049  time: 0.9362  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:36:07] fastreid.utils.events INFO:  eta: 11:45:45  epoch/iter: 23/11327  total_loss: 1.432  loss_cls: 1.318  loss_triplet: 0.115  time: 0.9362  data_time: 0.0008  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:37:15] fastreid.utils.events INFO:  eta: 11:44:32  epoch/iter: 24/11399  total_loss: 1.434  loss_cls: 1.316  loss_triplet: 0.1221  time: 0.9362  data_time: 0.0014  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:40:21] fastreid.utils.events INFO:  eta: 11:41:16  epoch/iter: 24/11599  total_loss: 1.453  loss_cls: 1.342  loss_triplet: 0.1033  time: 0.9361  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:43:28] fastreid.utils.events INFO:  eta: 11:37:56  epoch/iter: 24/11799  total_loss: 1.413  loss_cls: 1.296  loss_triplet: 0.1203  time: 0.9361  data_time: 0.0018  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:43:28] fastreid.utils.events INFO:  eta: 11:37:56  epoch/iter: 24/11799  total_loss: 1.413  loss_cls: 1.296  loss_triplet: 0.1203  time: 0.9361  data_time: 0.0018  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:46:35] fastreid.utils.events INFO:  eta: 11:34:54  epoch/iter: 25/11999  total_loss: 1.462  loss_cls: 1.352  loss_triplet: 0.1079  time: 0.9361  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:49:42] fastreid.utils.events INFO:  eta: 11:31:36  epoch/iter: 25/12199  total_loss: 1.414  loss_cls: 1.299  loss_triplet: 0.1105  time: 0.9360  data_time: 0.0008  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:50:49] fastreid.utils.events INFO:  eta: 11:30:28  epoch/iter: 25/12271  total_loss: 1.418  loss_cls: 1.298  loss_triplet: 0.1127  time: 0.9360  data_time: 0.0014  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:52:49] fastreid.utils.events INFO:  eta: 11:28:26  epoch/iter: 26/12399  total_loss: 1.454  loss_cls: 1.341  loss_triplet: 0.09971  time: 0.9360  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:55:55] fastreid.utils.events INFO:  eta: 11:25:01  epoch/iter: 26/12599  total_loss: 1.42  loss_cls: 1.311  loss_triplet: 0.1034  time: 0.9359  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:58:09] fastreid.utils.events INFO:  eta: 11:22:45  epoch/iter: 26/12743  total_loss: 1.424  loss_cls: 1.313  loss_triplet: 0.1171  time: 0.9359  data_time: 0.0014  lr: 3.50e-04  max_mem: 2539M
+[05/08 03:59:02] fastreid.utils.events INFO:  eta: 11:21:51  epoch/iter: 27/12799  total_loss: 1.434  loss_cls: 1.331  loss_triplet: 0.1091  time: 0.9359  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:02:08] fastreid.utils.events INFO:  eta: 11:18:22  epoch/iter: 27/12999  total_loss: 1.416  loss_cls: 1.31  loss_triplet: 0.1034  time: 0.9358  data_time: 0.0009  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:05:14] fastreid.utils.events INFO:  eta: 11:15:09  epoch/iter: 27/13199  total_loss: 1.444  loss_cls: 1.317  loss_triplet: 0.1161  time: 0.9358  data_time: 0.0014  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:05:29] fastreid.utils.events INFO:  eta: 11:14:54  epoch/iter: 27/13215  total_loss: 1.446  loss_cls: 1.331  loss_triplet: 0.1151  time: 0.9358  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:08:21] fastreid.utils.events INFO:  eta: 11:11:45  epoch/iter: 28/13399  total_loss: 1.414  loss_cls: 1.316  loss_triplet: 0.1008  time: 0.9357  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:11:27] fastreid.utils.events INFO:  eta: 11:08:35  epoch/iter: 28/13599  total_loss: 1.428  loss_cls: 1.307  loss_triplet: 0.112  time: 0.9356  data_time: 0.0013  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:12:49] fastreid.utils.events INFO:  eta: 11:07:06  epoch/iter: 28/13687  total_loss: 1.438  loss_cls: 1.331  loss_triplet: 0.1019  time: 0.9356  data_time: 0.0012  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:14:34] fastreid.utils.events INFO:  eta: 11:05:19  epoch/iter: 29/13799  total_loss: 1.414  loss_cls: 1.319  loss_triplet: 0.09249  time: 0.9356  data_time: 0.0010  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:17:40] fastreid.utils.events INFO:  eta: 11:02:15  epoch/iter: 29/13999  total_loss: 1.407  loss_cls: 1.291  loss_triplet: 0.107  time: 0.9355  data_time: 0.0014  lr: 3.50e-04  max_mem: 2539M
+[05/08 04:20:09] fastreid.engine.defaults INFO: Prepare testing set
+[05/08 04:20:10] fastreid.data.datasets.bases INFO: => Loaded MSMT17 in csv format: 
+| subset   | # ids   | # images   | # cameras   |
+|:---------|:--------|:-----------|:------------|
+| query    | 3060    | 11659      | 15          |
+| gallery  | 3060    | 82161      | 15          |
+[05/08 08:38:22] fastreid.evaluation.evaluator INFO: Start inference on 93820 images
+[05/08 08:38:46] fastreid.evaluation.evaluator INFO: Inference done 11/733. 0.6699 s / batch. ETA=0:08:04
+[05/08 08:39:16] fastreid.evaluation.evaluator INFO: Inference done 56/733. 0.6714 s / batch. ETA=0:07:35
+[05/08 08:39:47] fastreid.evaluation.evaluator INFO: Inference done 101/733. 0.6745 s / batch. ETA=0:07:07
+[05/08 08:40:18] fastreid.evaluation.evaluator INFO: Inference done 146/733. 0.6764 s / batch. ETA=0:06:37
+[05/08 08:40:48] fastreid.evaluation.evaluator INFO: Inference done 191/733. 0.6759 s / batch. ETA=0:06:06
+[05/08 08:41:18] fastreid.evaluation.evaluator INFO: Inference done 236/733. 0.6757 s / batch. ETA=0:05:36
+[05/08 08:41:49] fastreid.evaluation.evaluator INFO: Inference done 281/733. 0.6757 s / batch. ETA=0:05:06
+[05/08 08:42:19] fastreid.evaluation.evaluator INFO: Inference done 325/733. 0.6766 s / batch. ETA=0:04:36
+[05/08 08:42:50] fastreid.evaluation.evaluator INFO: Inference done 369/733. 0.6780 s / batch. ETA=0:04:07
+[05/08 08:43:20] fastreid.evaluation.evaluator INFO: Inference done 413/733. 0.6782 s / batch. ETA=0:03:37
+[05/08 08:43:50] fastreid.evaluation.evaluator INFO: Inference done 457/733. 0.6795 s / batch. ETA=0:03:08
+[05/08 08:44:21] fastreid.evaluation.evaluator INFO: Inference done 501/733. 0.6808 s / batch. ETA=0:02:38
+[05/08 08:44:51] fastreid.evaluation.evaluator INFO: Inference done 544/733. 0.6820 s / batch. ETA=0:02:09
+[05/08 08:45:21] fastreid.evaluation.evaluator INFO: Inference done 587/733. 0.6836 s / batch. ETA=0:01:40
+[05/08 08:45:52] fastreid.evaluation.evaluator INFO: Inference done 631/733. 0.6841 s / batch. ETA=0:01:10
+[05/08 08:46:22] fastreid.evaluation.evaluator INFO: Inference done 675/733. 0.6845 s / batch. ETA=0:00:39
+[05/08 08:46:53] fastreid.evaluation.evaluator INFO: Inference done 719/733. 0.6851 s / batch. ETA=0:00:09
+[05/08 08:47:03] fastreid.evaluation.evaluator INFO: Total inference time: 0:08:20.733932 (0.687821 s / batch per device, on 1 devices)
+[05/08 08:47:03] fastreid.evaluation.evaluator INFO: Total inference pure compute time: 0:08:18 (0.685177 s / batch per device, on 1 devices)
+[05/08 10:10:04 fastreid.engine.defaults]: Evaluation results for MSMT17 in csv format:
+[05/08 10:10:04 fastreid.evaluation.testing]: Evaluation results in csv format:
+| Dataset   | Rank-1   | Rank-5   | Rank-10   | mAP   | mINP   | metric   |
+|:----------|:---------|:---------|:----------|:------|:-------|:---------|
+| MSMT17    | 84.19    | 90.95    | 95.10     | 62.89 | 14.94  | 65.04    |
+[06/29 10:12:56 fastreid.utils.checkpoint]: Saving checkpoint to logs/msmt17/bagtricks_R50-ibn\model_best.pth
+[06/29 10:12:56 fastreid.utils.checkpoint]: Saving checkpoint to logs/msmt17/bagtricks_R50-ibn\model_0029.pth
