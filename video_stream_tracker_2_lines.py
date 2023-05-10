@@ -128,7 +128,7 @@ class VideoStreamTracker_2_Lines():
                     cv2.line(ori_img, yellow_line[0], yellow_line[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
                     already_counted.append(track_id)  # Set already counted for ID to true.
                     self.up_count += 1
-                    self.save_photo_and_wirte_log(bbox, ori_img, track_id)
+                    self.save_photo_and_wirte_log(bbox, ori_img, track_id, self.tracker_type_number)
                 elif intersect(midpoint_1, midpoint_0, green_line[0], green_line[1]) \
                         and track_id not in already_counted: # 离开
                     is_in = False
@@ -196,7 +196,7 @@ class VideoStreamTracker_2_Lines():
 
         # vid_writer.release()
 
-    def save_photo_and_wirte_log(self, bbox, ori_img, track_id): # todo: cut_photo_and_extract_feat_1_enter 重合严重
+    def save_photo_and_wirte_log(self, bbox, ori_img, track_id, tracker_type_number): # todo: cut_photo_and_extract_feat_1_enter 重合严重
         # ------------ 记录log ----------
         current_time = int(time.time())
         localtime = time.localtime(current_time)
@@ -205,7 +205,8 @@ class VideoStreamTracker_2_Lines():
         # ------- 提取特征 --------
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         person_feature = self.reid_model(ROI_person)
-        person_name = self.save_photo(bbox, ori_img, track_id, self.tracker_type_number, self.camera_name)
+        person_name = self.save_photo_and_get_person_name_by_reid(bbox, ori_img, track_id, tracker_type_number,
+                                                                  self.camera_name)
         if self.tracker_type_number == 0:  # 入口摄像机，记录所有进入的人
             self.customers_log[person_name] = {self.camera_name: dt}
         else:
@@ -223,37 +224,36 @@ class VideoStreamTracker_2_Lines():
             ,dt
         ))
 
-    def save_photo(self, bbox, ori_img, track_id, tracker_tpye_number, cam_name):
-        person_name = self.cut_photo_of_person(bbox, ori_img, track_id, tracker_tpye_number, cam_name)
-        return person_name
 
-    def cut_photo_of_person(self, bbox, ori_img, track_id, tracker_tpye_number, cam_name):
+    def save_photo_and_get_person_name_by_reid(self, bbox, ori_img, track_id, tracker_tpye_number, cam_name):
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        if tracker_tpye_number == 0:
-            person_name = '{}-{}'.format(cam_name, track_id)
-            path = str(self._save_dir + '/' + person_name + '.jpg')
-            makedir(path)
-            cv2.imwrite(path, ROI_person)
-        else:
+        person_name = '{}-{}'.format(cam_name, track_id)
+        path = str(self._save_dir + '/' + person_name + '.jpg')
+
+        # if tracker_tpye_number == 0:
+            # person_name = '{}-{}'.format(cam_name, track_id)
+            # path = str(self._save_dir + '/' + person_name + '.jpg')
+            # makedir(path)
+            # cv2.imwrite(path, ROI_person)
+        if tracker_tpye_number != 0:
             person_feature = self.reid_model(ROI_person)
             # ---- compare -----------
             cos_sim = cosine_similarity(self.feats, person_feature)
             max_idx = np.argmax(cos_sim, axis=1)  # 每行最大值的索引
             maximum = np.max(cos_sim, axis=1)
-            print("[ReID DEBUG] maximum = ", maximum)
+            print("[ReID DEBUG] maximum = ", max(maximum))
             if max(maximum) > 0.5:
                 max_idx[maximum < 0.5] = -1
                 idx = np.argmax(max_idx)
                 person_name = self.names[idx]  # 搜寻得到的
             else:
                 person_name = '{}-{}'.format(cam_name, track_id)
-
-            print("[DEBUG-reid] person_name: ", person_name)
             path = str(self._save_dir + '/' + person_name + '.jpg')
             if os.path.exists(path):
                 path = increment_person_name(path)
-            makedir(path)
-            cv2.imwrite(path, ROI_person)
+
+        makedir(path)
+        cv2.imwrite(path, ROI_person)
         return person_name
 
     def draw_info_to_frame_binary_lines(self, is_in, last_track_id, ori_img, outputs, total_track):
