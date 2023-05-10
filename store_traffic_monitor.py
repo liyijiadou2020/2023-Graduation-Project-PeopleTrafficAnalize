@@ -6,8 +6,7 @@ import warnings
 import argparse
 from person_count_utils import \
     tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
-    put_text_to_cv2_img_with_pil, draw_line, makedir, print_statistics_to_frame, \
-    print_newest_info, \
+    put_text_to_cv2_img_with_pil, draw_line, makedir, draw_statistics_to_frame, \
     draw_idx_frame, increment_path, ROOT
 from utils.datasets import LoadStreams, LoadImages
 from utils.general import check_img_size

@@ -77,7 +77,7 @@ def draw_line(point_1, point_2, ori_img, color=(0, 255, 255)):
     return line
 
 # def print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count):
-def print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count):
+def draw_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count):
     label = "TOTAL: {} people cross the yellow line. ({} IN, {} OUT.)".format(str(total_counter), str(up_count), str(down_count))
     t_size = get_size_with_pil(label, 15)  # 原：25
     x1 = 20
@@ -95,20 +95,20 @@ def draw_idx_frame(ori_img, idx_frame):
     ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
     return ori_img
 
-def print_newest_info(angle, last_track_id, ori_img):
-    current_time = int(time.time())
-    localtime = time.localtime(current_time)
-    dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-    # ---------------------------------------
-    label = "TIME: {} | Person №{} crossed yellow line. [{}]".format(dt, str(last_track_id), str("IN") if angle >= 0 else str('OUT'))
-    t_size = get_size_with_pil(label, 25)
-    x1 = 20
-    y1 = 900
-    color = compute_color_for_labels(2)
-    ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
-    return ori_img
+# def draw_newest_info(angle, last_track_id, ori_img):
+#     current_time = int(time.time())
+#     localtime = time.localtime(current_time)
+#     dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+#     # ---------------------------------------
+#     label = "TIME: {} | Person №{} crossed yellow line. [{}]".format(dt, str(last_track_id), str("IN") if angle >= 0 else str('OUT'))
+#     t_size = get_size_with_pil(label, 25)
+#     x1 = 20
+#     y1 = 900
+#     color = compute_color_for_labels(2)
+#     ori_img = put_text_to_cv2_img_with_pil(ori_img, label, (x1 + 5, y1 - t_size[1] - 2), (255, 0, 0))
+#     return ori_img
 
-def print_newest_info_binary_lines(is_in, last_track_id, ori_img):
+def draw_newest_info_binary_lines(is_in, last_track_id, ori_img):
     current_time = int(time.time())
     localtime = time.localtime(current_time)
     dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)

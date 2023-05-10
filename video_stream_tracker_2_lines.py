@@ -6,8 +6,8 @@ import numpy as np
 import os
 import re
 from person_count_utils import tlbr_midpoint, intersect, vector_angle, get_size_with_pil, compute_color_for_labels, \
-    put_text_to_cv2_img_with_pil, draw_line, makedir, print_statistics_to_frame, print_newest_info, \
-    draw_idx_frame, print_newest_info_binary_lines
+    put_text_to_cv2_img_with_pil, draw_line, makedir, draw_statistics_to_frame, \
+    draw_idx_frame, draw_newest_info_binary_lines
 from utils.draw import draw_boxes_and_text, draw_reid_person, draw_boxes
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 from sklearn.metrics.pairwise import cosine_similarity
@@ -37,7 +37,7 @@ class VideoStreamTracker_2_Lines():
                  camera_name,
                  output_people_img_path,
                  p1, p2, p3, p4,
-                 tracker_type_number=-1, is_display=True, is_save_vid=False):
+                 tracker_type_number=-1, is_display=True, is_save_vid=True):
         '''
         todo: 默认参数：cus_features - None, cus_names - [],  is_display - True, is_save_vid - False
         parameters:
@@ -148,7 +148,7 @@ class VideoStreamTracker_2_Lines():
             if self.tracker_type_number != 0:
                 img, match_names = self.draw_reid_result_to_frame(features, ori_img, xy)
             # 4.绘制统计信息
-            ori_img =self.draw_info_to_frame_binary_lines(is_in, last_track_id, ori_img, outputs, self.total_track)
+            ori_img = self.draw_box_and_info_to_frame(is_in, last_track_id, ori_img, outputs, self.total_track)
 
             # 5.展示图像，输出结果视频
             if self.is_display:
@@ -158,21 +158,6 @@ class VideoStreamTracker_2_Lines():
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
             end_time = time_synchronized()
-            if self.is_save_vid: # 输出视频
-                if vid_path != self._save_dir:
-                    vid_path = self._save_dir
-                    if isinstance(vid_writer, cv2.VideoWriter):
-                        vid_writer.release()
-                    if vid_cap:  # video
-                        fps = vid_cap.get(cv2.CAP_PROP_FPS)
-                        w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    else:  # stream
-                        fps, w, h = 30, ori_img.shape[1], ori_img.shape[0]
-                    save_path = str(
-                        Path(self._save_dir).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
-                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
-                vid_writer.write(ori_img)
             print("Index of frame: {} "
                               "Spend time: {:.03f}s, "
                               "Fps: {:.03f}, "
@@ -189,6 +174,21 @@ class VideoStreamTracker_2_Lines():
                                       , features.shape
                                       )
                               )
+            if self.is_save_vid: # 输出视频
+                if vid_path != self._save_dir:
+                    vid_path = self._save_dir
+                    if isinstance(vid_writer, cv2.VideoWriter):
+                        vid_writer.release()
+                    if vid_cap:  # video
+                        fps = vid_cap.get(cv2.CAP_PROP_FPS)
+                        w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                        h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    else:  # stream
+                        fps, w, h = 30, ori_img.shape[1], ori_img.shape[0]
+                    save_path = str(
+                        Path(self._save_dir).with_suffix('.mp4'))  # force *.mp4 suffix on results videos
+                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+                vid_writer.write(ori_img)
         cv2.destroyAllWindows()  ## 销毁所有opencv显示窗口
 
         if self.tracker_type_number == 0: # 如果这是入口摄像头，需要提取特征后续使用
@@ -235,11 +235,6 @@ class VideoStreamTracker_2_Lines():
         person_name = '{}-{}'.format(cam_name, track_id)
         path = str(self._save_dir + '/' + person_name + '.jpg')
 
-        # if tracker_tpye_number == 0:
-            # person_name = '{}-{}'.format(cam_name, track_id)
-            # path = str(self._save_dir + '/' + person_name + '.jpg')
-            # makedir(path)
-            # cv2.imwrite(path, ROI_person)
         if tracker_tpye_number != 0:
             person_feature = self.reid_model(ROI_person)
             # ---- compare -----------
@@ -261,11 +256,11 @@ class VideoStreamTracker_2_Lines():
         cv2.imwrite(path, ROI_person)
         return person_name
 
-    def draw_info_to_frame_binary_lines(self, is_in, last_track_id, ori_img, outputs, total_track):
-        ori_img = print_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
+    def draw_box_and_info_to_frame(self, is_in, last_track_id, ori_img, outputs, total_track):
+        ori_img = draw_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
         ori_img = draw_idx_frame(ori_img, self.idx_frame)
         if last_track_id >= 0:
-            ori_img = print_newest_info_binary_lines(is_in, last_track_id, ori_img)  # 打印撞线人的信息
+            ori_img = draw_newest_info_binary_lines(is_in, last_track_id, ori_img)  # 打印撞线人的信息
         if len(outputs) > 0:  # 展示跟踪结果
             bbox_tlwh = []
             bbox_xyxy = outputs[:, :4]

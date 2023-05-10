@@ -40,7 +40,7 @@ def draw_boxes_and_text(img, bbox, identities=None, offset=(0, 0)):
         # box text and bar
         id = int(identities[i]) if identities is not None else 0
         color = compute_color_for_labels(id)
-        label = '{}{:d}'.format("PID:", id)
+        label = '{}{:d}'.format("ID:", id)
         t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, 1)[0]
         cv2.rectangle(img, (x1, y1), (x2, y2), color, 1)
         cv2.rectangle(
