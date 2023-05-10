@@ -202,11 +202,11 @@ class VideoStreamTracker_2_Lines():
         current_time = int(time.time())
         localtime = time.localtime(current_time)
         dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+
+        person_name, person_feature = self.cut_photo_and_extract_feat(bbox, ori_img, track_id, self.tracker_type_number)
         if self.tracker_type_number == 0:  # 入口摄像机，记录所有进入的人
-            person_name, person_feature = self.cut_photo_and_extract_feat_1_enter(bbox, ori_img, track_id)
             self.customers_log[person_name] = {self.camera_name: dt}
         else:
-            person_name, person_feature = self.cut_photo_and_extract_feat_n_enter(bbox, ori_img, track_id)
             if person_name not in self.customers_log:
                 self.customers_log[person_name] = {self.camera_name: dt}
             else:
@@ -221,40 +221,33 @@ class VideoStreamTracker_2_Lines():
             ,dt
         ))
 
-
-    def cut_photo_and_extract_feat_1_enter(self, bbox, ori_img, track_id):
+    def cut_photo_and_extract_feat(self, bbox, ori_img, track_id, tracker_tpye_number):
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        person_name = 'cus{}'.format(track_id)
-        path = str(self._save_dir + '/' + person_name + '.jpg')
-        makedir(path)
-        cv2.imwrite(path, ROI_person)
-
-        # ------- 提取特征 --------
-        person_feature = self.reid_model(ROI_person)
-        return person_name, person_feature
-
-    def cut_photo_and_extract_feat_n_enter(self, bbox, ori_img, track_id): # todo: 这个重识别的结果和画面上打印的不一样！
-        ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        person_feature = self.reid_model(ROI_person)
-        # ---- compare -----------
-        cos_sim = cosine_similarity(self.feats, person_feature)
-        max_idx = np.argmax(cos_sim, axis=1)  # 每行最大值的索引
-        maximum = np.max(cos_sim, axis=1)
-        print("[ReID DEBUG] maximum = ", maximum)
-        if max(maximum) > 0.45: # 0.5大了
-            max_idx[maximum < 0.45] = -1
-            idx = np.argmax(max_idx)
-            person_name = self.names[idx]  # 搜寻得到的
+        if tracker_tpye_number == 0:
+            person_name = 'cus{}'.format(track_id)
+            path = str(self._save_dir + '/' + person_name + '.jpg')
+            makedir(path)
+            cv2.imwrite(path, ROI_person)
         else:
-            person_name = "new-{}".format(track_id)
+            person_feature = self.reid_model(ROI_person)
+            # ---- compare -----------
+            cos_sim = cosine_similarity(self.feats, person_feature)
+            max_idx = np.argmax(cos_sim, axis=1)  # 每行最大值的索引
+            maximum = np.max(cos_sim, axis=1)
+            print("[ReID DEBUG] maximum = ", maximum)
+            if max(maximum) > 0.45:  # 0.5大了
+                max_idx[maximum < 0.45] = -1
+                idx = np.argmax(max_idx)
+                person_name = self.names[idx]  # 搜寻得到的
+            else:
+                person_name = "new-{}".format(track_id)
 
-        print("[DEBUG-reid] person_name: ", person_name)
-        path_to_image = self._save_dir + '/{}.jpg'.format(person_name)
-        if os.path.exists(path_to_image):
-            path_to_image = increment_person_name(path_to_image)
-        makedir(path_to_image)
-        cv2.imwrite(path_to_image, ROI_person)
-
+            print("[DEBUG-reid] person_name: ", person_name)
+            path_to_image = self._save_dir + '/{}.jpg'.format(person_name)
+            if os.path.exists(path_to_image):
+                path_to_image = increment_person_name(path_to_image)
+            makedir(path_to_image)
+            cv2.imwrite(path_to_image, ROI_person)
         # ------- 提取特征 --------
         person_feature = self.reid_model(ROI_person)
         return person_name, person_feature
