@@ -202,7 +202,10 @@ class VideoStreamTracker_2_Lines():
         localtime = time.localtime(current_time)
         dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
 
-        person_name, person_feature = self.cut_photo_and_extract_feat(bbox, ori_img, track_id, self.tracker_type_number, self.camera_name)
+        # ------- 提取特征 --------
+        ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
+        person_feature = self.reid_model(ROI_person)
+        person_name = self.save_photo(bbox, ori_img, track_id, self.tracker_type_number, self.camera_name)
         if self.tracker_type_number == 0:  # 入口摄像机，记录所有进入的人
             self.customers_log[person_name] = {self.camera_name: dt}
         else:
@@ -220,7 +223,11 @@ class VideoStreamTracker_2_Lines():
             ,dt
         ))
 
-    def cut_photo_and_extract_feat(self, bbox, ori_img, track_id, tracker_tpye_number, cam_name):
+    def save_photo(self, bbox, ori_img, track_id, tracker_tpye_number, cam_name):
+        person_name = self.cut_photo_of_person(bbox, ori_img, track_id, tracker_tpye_number, cam_name)
+        return person_name
+
+    def cut_photo_of_person(self, bbox, ori_img, track_id, tracker_tpye_number, cam_name):
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         if tracker_tpye_number == 0:
             person_name = '{}-{}'.format(cam_name, track_id)
@@ -234,22 +241,20 @@ class VideoStreamTracker_2_Lines():
             max_idx = np.argmax(cos_sim, axis=1)  # 每行最大值的索引
             maximum = np.max(cos_sim, axis=1)
             print("[ReID DEBUG] maximum = ", maximum)
-            if max(maximum) > 0.45:  # 0.5大了
-                max_idx[maximum < 0.45] = -1
+            if max(maximum) > 0.5:
+                max_idx[maximum < 0.5] = -1
                 idx = np.argmax(max_idx)
                 person_name = self.names[idx]  # 搜寻得到的
             else:
                 person_name = '{}-{}'.format(cam_name, track_id)
 
             print("[DEBUG-reid] person_name: ", person_name)
-            path_to_image = self._save_dir + '/{}.jpg'.format(person_name)
-            if os.path.exists(path_to_image):
-                path_to_image = increment_person_name(path_to_image)
-            makedir(path_to_image)
-            cv2.imwrite(path_to_image, ROI_person)
-        # ------- 提取特征 --------
-        person_feature = self.reid_model(ROI_person)
-        return person_name, person_feature
+            path = str(self._save_dir + '/' + person_name + '.jpg')
+            if os.path.exists(path):
+                path = increment_person_name(path)
+            makedir(path)
+            cv2.imwrite(path, ROI_person)
+        return person_name
 
     def draw_info_to_frame_binary_lines(self, is_in, last_track_id, ori_img, outputs, total_track):
         ori_img = print_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
