@@ -67,16 +67,16 @@ class TrafficMonitor():
 
         exp_name = 'exp'
         project = ROOT / 'runs/tracks'
-        # save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
-        save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
+        save_dir = increment_path(Path(project) / exp_name, exist_ok=False) # 不允许同名目录存在，如果存在则另建一个名字不同的目录
+        # save_dir = increment_path(Path(project) / exp_name, exist_ok=True)  # 允许同名目录存在，如果存在 不需要另建
         save_dir = Path(save_dir)
         self.save_dir = save_dir
         makedir(self.save_dir)
-        # --------- customers_log -----------
+        # --------- cus_log -----------
         cam1_name = 'in'
         cam2_name = 'in2'
         cam3_name = 'in3'
-        self.customers_log = {}
+        self.cus_log = {}
         # -----------------------------------
         p1 = [0.31, 0.74]
         p2 = [1.00, 0.59]
@@ -85,43 +85,36 @@ class TrafficMonitor():
         self.save_dir_in = str(save_dir / cam1_name)
         makedir(self.save_dir_in)
         # 0 means this camera is entering camera
-        self.cam1_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model,
-                                               self.deepsort, self.dataset_1, None, [], cam1_name,
-                                               self.save_dir_in, p1, p2, p3, p4,
-                                                       0)
+        self.cam1_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model, self.deepsort, self.dataset_1,
+                                                       None, [], cam1_name, self.save_dir_in, p1, p2, p3, p4, 0)
         p2_1 = [0.02, 0.21]
         p2_2 = [0.08, 1]
         p2_3 = [0, 0.21]
         p2_4 = [0.06, 1]
         # 3 means this camera in store
-        self.cam2_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model,
-                                               self.deepsort, self.dataset_2, None, [], cam2_name,
-                                               str(save_dir / cam2_name), p2_1, p2_2, p2_3, p2_4,
-                                                       3)
+        self.cam2_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model, self.deepsort, self.dataset_2,
+                                                       None, [], cam2_name, str(save_dir / cam2_name), p2_1, p2_2, p2_3,
+                                                       p2_4, 3)
         p3_1 = [0.52, 0.51]
         p3_2 = [0.52, 0.93]
         p3_3 = [0.42, 0.51]
         p3_4 = [0.42, 0.93]
-        self.cam3_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model,
-                                               self.deepsort, self.dataset_3, None, [], cam3_name,
-                                               str(save_dir / cam3_name), p3_1, p3_2, p3_3, p3_4,
-                                                       3)
+        self.cam3_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model, self.deepsort, self.dataset_3,
+                                                       None, [], cam3_name, str(save_dir / cam3_name), p3_1, p3_2, p3_3,
+                                                       p3_4, 3)
         # self._logger.info("args: ", self.args)
 
     def demo(self):
         # self.cus_features, self.cus_names = self.cam1_tracker.tracking()
         # -------- test --------
-        self.cus_features, self.cus_names, self.customers_log = self.cam1_tracker.tracking()
+        self.cus_features, self.cus_names, self.cus_log = self.cam1_tracker.track()
 
         # self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
-        self.cam2_tracker.customers_log = self.customers_log
-        self.customers_log = self.cam2_tracker.tracking(self.cus_features, self.cus_names)
+        self.cus_log = self.cam2_tracker.track(self.cus_features, self.cus_names, self.cus_log)
+        self.cus_log = self.cam3_tracker.track(self.cus_features, self.cus_names, self.cus_log)
 
-        self.cam3_tracker.customers_log = self.customers_log
-        self.customers_log = self.cam3_tracker.tracking(self.cus_features, self.cus_names)
-
-        sav_txt = open(file="{}/customers_log.txt".format(self.save_dir), mode="w", encoding="utf-8")
-        sav_txt.write(str(self.customers_log))
+        sav_txt = open(file="{}/cus_log.txt".format(self.save_dir), mode="w", encoding="utf-8")
+        sav_txt.write(str(self.cus_log))
         sav_txt.close()
         # --------------- person search
         # name_idx = self.person_query('yoyo.jpg')  # 把需要查询的人物照片放在 self.save_dir，就可以通过函数查询

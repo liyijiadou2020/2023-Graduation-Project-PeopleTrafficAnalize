@@ -32,8 +32,8 @@ class VideoStreamTracker_2_Lines():
                  reid_model,
                  deepsort_model,
                  dataset,
-                 query_feat,
-                 query_names,
+                 feats,
+                 names,
                  camera_name,
                  output_people_img_path,
                  p1, p2, p3, p4,
@@ -60,15 +60,14 @@ class VideoStreamTracker_2_Lines():
         # 1.画黄线
         self.p1_ratio = p1
         self.p2_ratio = p2
-        # -------- 双线法
         self.p3_ratio = p3
         self.p4_ratio = p4
         # 2.处理tracks
         self._save_dir = output_people_img_path
         # 3.ReID
         self.reid_model = reid_model
-        self.query_feat = query_feat
-        self.query_names = query_names
+        self.feats = feats
+        self.names = names
         # ------- 记录触线时间 -------
         self.camera_name = camera_name
         self.customers_log = {}
@@ -80,13 +79,11 @@ class VideoStreamTracker_2_Lines():
         self.is_save_vid = is_save_vid
         # 6.销毁窗口 & 打印log
 
-    def count_total_frame(self):
-        pass
-
-    def tracking(self, query_feat=None, query_names=[]):
+    def track(self, query_feat=None, query_names=[], cus_log={}):
         # 如果不是入口摄像头，那么在处理之前要更新一下query_feat, cus_names
         if self.tracker_type_number != 0:
             self.update_reid_query(query_feat, query_names)
+            self.customers_log = cus_log
 
         paths = {}  # 每一个track的行动轨迹
         last_track_id = -1
@@ -114,7 +111,7 @@ class VideoStreamTracker_2_Lines():
                 bbox = track[:4]
                 track_id = track[-1]
                 midpoint_1 = tlbr_midpoint(bbox) # TODO: 简化撞线计算
-                origin_midpoint = (midpoint_1[0],
+                origi_midpoint = (midpoint_1[0],
                                    ori_img.shape[0] - midpoint_1[1])  # get midpoint_1 respective to bottom-left
                 if track_id not in paths:
                     paths[track_id] = deque(maxlen=2)  # path保存了每个track的两个帧的midpoint（运动轨迹）
@@ -124,16 +121,16 @@ class VideoStreamTracker_2_Lines():
                 origin_previous_midpoint = (midpoint_0[0], ori_img.shape[0] - midpoint_0[1])
 
                 if intersect(midpoint_1, midpoint_0, yellow_line[0], yellow_line[1]) \
-                        and track_id not in already_counted:
+                        and track_id not in already_counted: # 进入
                     is_in = True
                     self.total_counter += 1
                     last_track_id = track_id;  # 记录触线者的ID
                     cv2.line(ori_img, yellow_line[0], yellow_line[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
                     already_counted.append(track_id)  # Set already counted for ID to true.
                     self.up_count += 1
-                    self.write_to_customers_log(bbox, ori_img, track_id, yellow_line) # todo:test
+                    self.save_photo_and_wirte_log(bbox, ori_img, track_id)
                 elif intersect(midpoint_1, midpoint_0, green_line[0], green_line[1]) \
-                        and track_id not in already_counted:
+                        and track_id not in already_counted: # 离开
                     is_in = False
                     self.total_counter += 1
                     last_track_id = track_id;  # 记录触线者的ID
@@ -191,91 +188,72 @@ class VideoStreamTracker_2_Lines():
 
         if self.tracker_type_number == 0: # 如果这是入口摄像头，需要提取特征后续使用
             feats, names = self.feature_extract()
+            self.save_feats_names_to_dir(feats, names) # todo: test，尝试分离提取&存储
             customer_logs = self.customers_log
             return feats, names, customer_logs
         else:
+            # todo: 把这个镜头下新出现的feat和name也添加到query_features和names里去
             return self.customers_log
 
         # vid_writer.release()
 
-    def write_to_customers_log(self, bbox, ori_img, track_id, yellow_line):
-        # --0-0-0-0--------------
+    def save_photo_and_wirte_log(self, bbox, ori_img, track_id): # todo: cut_photo_and_extract_feat_1_enter 重合严重
+        # ------------ 记录log ----------
+        current_time = int(time.time())
+        localtime = time.localtime(current_time)
+        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
         if self.tracker_type_number == 0:  # 入口摄像机，记录所有进入的人
-            person_name, person_feature = self.customer_enter(bbox, ori_img, track_id, yellow_line)
-            # ------------ 记录log ----------
-            current_time = int(time.time())
-            localtime = time.localtime(current_time)
-            dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+            person_name, person_feature = self.cut_photo_and_extract_feat_1_enter(bbox, ori_img, track_id)
             self.customers_log[person_name] = {self.camera_name: dt}
-            # -------------------------------
         else:
-            person_name, person_feature = self.person_search(bbox, ori_img, track_id)
-            current_time = int(time.time())
-            localtime = time.localtime(current_time)
-            dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+            person_name, person_feature = self.cut_photo_and_extract_feat_n_enter(bbox, ori_img, track_id)
             if person_name not in self.customers_log:
                 self.customers_log[person_name] = {self.camera_name: dt}
             else:
                 self.customers_log[person_name][self.camera_name] = dt
-        # --0-0-0-0--------------
 
-    def customer_enter(self, bbox, ori_img, track_id, yellow_line_in):
-        # todo: 把撞线人的特征输出来 & 记录入店的时间
+        # print info to console         打印当前的时间 & 顾客入店信息
+        welcome_str = "[Customer came👏]" if self.tracker_type_number == 0 else "[ReID Result🙌]"
+        print(" {} current customer💂‍♂️: {}, "
+              " time⏰ : {}".format(
+            welcome_str
+            ,person_name
+            ,dt
+        ))
 
-        # 进店的时候，把人物的图像抠出来
-        cv2.line(ori_img, yellow_line_in[0], yellow_line_in[1], (0, 0, 0), 1)  # 消除线条
+
+    def cut_photo_and_extract_feat_1_enter(self, bbox, ori_img, track_id):
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         person_name = 'cus{}'.format(track_id)
         path = str(self._save_dir + '/' + person_name + '.jpg')
         makedir(path)
         cv2.imwrite(path, ROI_person)
-        # 打印当前的时间 & 顾客入店信息
-        current_time = int(time.time())
-        localtime = time.localtime(current_time)
-        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-        print("[Customer came👏] current customer💂‍♂️: {}, "
-              "Enter time⏰ : {}".format(
-            track_id
-            , dt
-        ))
 
         # ------- 提取特征 --------
         person_feature = self.reid_model(ROI_person)
         return person_name, person_feature
 
-    def person_search(self, bbox, ori_img, track_id):
+    def cut_photo_and_extract_feat_n_enter(self, bbox, ori_img, track_id): # todo: 这个重识别的结果和画面上打印的不一样！
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         person_feature = self.reid_model(ROI_person)
         # ---- compare -----------
-        cos_sim = cosine_similarity(self.query_feat, person_feature)
+        cos_sim = cosine_similarity(self.feats, person_feature)
         max_idx = np.argmax(cos_sim, axis=1)  # 每行最大值的索引
         maximum = np.max(cos_sim, axis=1)
         print("[ReID DEBUG] maximum = ", maximum)
-        if max(maximum) > 0.4: # 0.5大了
-            max_idx[maximum < 0.4] = -1
+        if max(maximum) > 0.45: # 0.5大了
+            max_idx[maximum < 0.45] = -1
             idx = np.argmax(max_idx)
-            person_name = self.query_names[idx]  # 搜寻得到的
+            person_name = self.names[idx]  # 搜寻得到的
         else:
             person_name = "new-{}".format(track_id)
 
         print("[DEBUG-reid] person_name: ", person_name)
         path_to_image = self._save_dir + '/{}.jpg'.format(person_name)
-
         if os.path.exists(path_to_image):
             path_to_image = increment_person_name(path_to_image)
-
         makedir(path_to_image)
         cv2.imwrite(path_to_image, ROI_person)
-
-        # 打印当前的时间 & 顾客入店信息
-        current_time = int(time.time())
-        localtime = time.localtime(current_time)
-        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-        print("[ReID Result🙌] person: {}, "
-              "time⏰ : {}".format(
-            person_name
-            , dt
-        ))
 
         # ------- 提取特征 --------
         person_feature = self.reid_model(ROI_person)
@@ -311,18 +289,18 @@ class VideoStreamTracker_2_Lines():
         return ori_img
 
     def draw_reid_result_to_frame(self, features, ori_img, xy):
-        person_cossim = cosine_similarity(features, self.query_feat)  # 计算features和query_features的余弦相似度
+        person_cossim = cosine_similarity(features, self.feats)  # 计算features和query_features的余弦相似度
         max_idx = np.argmax(person_cossim, axis=1)
         maximum = np.max(person_cossim, axis=1)
         max_idx[maximum < 0.5] = -1
         score = maximum
         reid_results = max_idx
-        img, match_names = draw_reid_person(ori_img, xy, reid_results, self.query_names)  # draw_person name
+        img, match_names = draw_reid_person(ori_img, xy, reid_results, self.names)  # draw_person name
         return img, match_names
 
     def update_reid_query(self, features, names):
-        self.query_feat = features
-        self.query_names = names
+        self.feats = features
+        self.names = names
 
     def feature_extract(self): # TODO: 并不是十分妥当！
         # reid_feature = Reid_feature() # reid model
@@ -337,22 +315,27 @@ class VideoStreamTracker_2_Lines():
         names = names[::-1] # 倒序翻转 [1, 2, 3, 4, 5] -> [5, 4, 3, 2, 1]
         names.append("None")
 
-        feat_path = os.path.join(str(self._save_dir), '..', 'query_features')
-        names_path = os.path.join(str(self._save_dir), '..', 'names')
-        # 实际保存的是embs数组中除了最后一行以外的所有行
-        np.save(feat_path, embs[:-1, :]) # 将numpy数组 embs 的第一维度的所有元素（除了最后一个元素）保存为二进制文件的操作，文件名为 feat_path
-        np.save(names_path, names)  # save query
-
+        # ---------- 不需要的 --------------------
         # 代码读取一个.npy文件，该文件中包含了一个特征向量query，将另外一组特征向量embs与query计算余弦相似度
-        path = '{}.npy'.format(str(feat_path))
-        feats = np.load(path)
+        # path = '{}.npy'.format(str(feat_path))
+        # feats = np.load(path)
+
         # cos_sim = cosine_similarity(embs, query)
         # max_idx = np.argmax(cos_sim, axis=1)
         # maximum = np.max(cos_sim, axis=1)
         # max_idx[maximum < 0.6] = -1
         print("Succeed extracting features for ReID.")
 
-        return feats, names
+        # return feats, names
+        return embs, names # 就完全不影响
+
+    def save_feats_names_to_dir(self, embs, names):
+        feat_path = os.path.join(str(self._save_dir), '..', 'query_features')
+        names_path = os.path.join(str(self._save_dir), '..', 'names')
+        # 实际保存的是embs数组中除了最后一行以外的所有行
+        np.save(feat_path, embs[:-1, :])  # 将numpy数组 embs 的第一维度的所有元素（除了最后一个元素）保存为二进制文件的操作，文件名为 feat_path
+        np.save(names_path, names)  # save query
+        print("[INFO] save query_features.npy & names.npy")
 
     def get_customer_logs(self):
         return self.customers_log
