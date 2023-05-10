@@ -12,6 +12,7 @@ import sys
 sys.path.append('./fast_reid/demo')
 sys.path.append('./fast_reid')
 from demo import Reid_feature
+
 # from predictor import FeatureExtractionDemo
 
 
@@ -19,7 +20,8 @@ __all__ = ['DeepReid']
 
 
 class DeepReid(object):
-    def __init__(self, model_path, max_dist=0.2, min_confidence=0.3, nms_max_overlap=1.0, max_iou_distance=0.7, max_age=70, n_init=3, nn_budget=100, use_cuda=True):
+    def __init__(self, model_path, max_dist=0.2, min_confidence=0.3, nms_max_overlap=1.0,
+                 max_iou_distance=0.7, max_age=70, n_init=3, nn_budget=100, use_cuda=True):
         self.min_confidence = min_confidence
         self.nms_max_overlap = nms_max_overlap # 非极大抑制阈值，设置为1代表不进行抑制
 
@@ -29,7 +31,7 @@ class DeepReid(object):
 
         max_cosine_distance = max_dist
         nn_budget = 100
-        metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
+        metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget) # 余弦距离的实现
         self.tracker = Tracker(metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)
 
     def update(self, bbox_xywh, confidences, ori_img):
@@ -56,7 +58,6 @@ class DeepReid(object):
             self.tracker.update(detections)
 
             # output bbox identities
-
             for track in self.tracker.tracks:
                 if not track.is_confirmed() or track.time_since_update > 1:
                     continue

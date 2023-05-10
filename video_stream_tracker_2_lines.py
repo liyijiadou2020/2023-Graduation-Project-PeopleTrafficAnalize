@@ -94,6 +94,12 @@ class VideoStreamTracker_2_Lines():
         vid_path = None
         vid_writer = None
 
+        '''
+        img：当前帧的图像数据（numpy数组类型）,表示经过缩放或裁剪后的图像数据，这是为了满足YOLO目标检测算法输入图像的大小要求而进行的处理。
+        ori_img：当前帧的原始图像数据（numpy数组类型）,表示没有进行任何处理的原始图像数据，它用于后续的跟踪器更新和结果可视化等操作。
+            在这段代码中，img用于目标检测，ori_img用于跟踪和结果显示。
+        vid_cap：视频的读取器对象（OpenCV中的VideoCapture类型）
+        '''
         for video_path, img, ori_img, vid_cap in self.dataset:  # 获取视频帧
             self.idx_frame += 1
             start_time = time_synchronized()
