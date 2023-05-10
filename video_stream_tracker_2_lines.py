@@ -110,7 +110,7 @@ class VideoStreamTracker_2_Lines():
             for track in outputs:
                 bbox = track[:4]
                 track_id = track[-1]
-                midpoint_1 = tlbr_midpoint(bbox) # TODO: 简化撞线计算
+                midpoint_1 = tlbr_midpoint(bbox)
                 origi_midpoint = (midpoint_1[0],
                                    ori_img.shape[0] - midpoint_1[1])  # get midpoint_1 respective to bottom-left
                 if track_id not in paths:
@@ -128,7 +128,7 @@ class VideoStreamTracker_2_Lines():
                     cv2.line(ori_img, yellow_line[0], yellow_line[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
                     already_counted.append(track_id)  # Set already counted for ID to true.
                     self.up_count += 1
-                    self.save_photo_and_wirte_log(bbox, ori_img, track_id, self.tracker_type_number)
+                    self.save_photo_and_wirte_log(bbox, ori_img, track_id, self.tracker_type_number) # 人流量统计的主要处理逻辑
                 elif intersect(midpoint_1, midpoint_0, green_line[0], green_line[1]) \
                         and track_id not in already_counted: # 离开
                     is_in = False
@@ -196,17 +196,16 @@ class VideoStreamTracker_2_Lines():
 
         # vid_writer.release()
 
-    def save_photo_and_wirte_log(self, bbox, ori_img, track_id, tracker_type_number): # todo: cut_photo_and_extract_feat_1_enter 重合严重
-        # ------------ 记录log ----------
-        current_time = int(time.time())
-        localtime = time.localtime(current_time)
-        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
-
-        # ------- 提取特征 --------
+    def save_photo_and_wirte_log(self, bbox, ori_img, track_id, tracker_type_number):
+        # ------- reid 获取 person_name --------
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         person_feature = self.reid_model(ROI_person)
         person_name = self.save_photo_and_get_person_name_by_reid(bbox, ori_img, track_id, tracker_type_number,
                                                                   self.camera_name)
+        # ------------ 记录log ----------
+        current_time = int(time.time())
+        localtime = time.localtime(current_time)
+        dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
         if self.tracker_type_number == 0:  # 入口摄像机，记录所有进入的人
             self.customers_log[person_name] = {self.camera_name: dt}
         else:
@@ -215,7 +214,7 @@ class VideoStreamTracker_2_Lines():
             else:
                 self.customers_log[person_name][self.camera_name] = dt
 
-        # print info to console         打印当前的时间 & 顾客入店信息
+        # ------- print info to console 打印当前的时间 & 顾客入店信息 -------
         welcome_str = "[Customer came👏]" if self.tracker_type_number == 0 else "[ReID Result🙌]"
         print(" {} current customer💂‍♂️: {}, "
               " time⏰ : {}".format(
