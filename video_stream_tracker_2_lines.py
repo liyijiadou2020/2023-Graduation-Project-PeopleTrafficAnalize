@@ -142,7 +142,6 @@ class VideoStreamTracker_2_Lines():
             if self.tracker_type_number != 0:
                 img, match_names = self.draw_reid_result_to_frame(features, ori_img, xy)
             # 4.绘制统计信息
-            # ori_img = self.draw_info_to_frame(angle, last_track_id, ori_img, outputs, self.total_track)
             ori_img =self.draw_info_to_frame_binary_lines(is_in, last_track_id, ori_img, outputs, self.total_track)
 
             # 5.展示图像，输出结果视频
@@ -188,7 +187,7 @@ class VideoStreamTracker_2_Lines():
 
         if self.tracker_type_number == 0: # 如果这是入口摄像头，需要提取特征后续使用
             feats, names = self.feature_extract()
-            self.save_feats_names_to_dir(feats, names) # todo: test，尝试分离提取&存储
+            self.save_feats_names_to_dir(feats, names)
             customer_logs = self.customers_log
             return feats, names, customer_logs
         else:
@@ -203,7 +202,7 @@ class VideoStreamTracker_2_Lines():
         localtime = time.localtime(current_time)
         dt = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
 
-        person_name, person_feature = self.cut_photo_and_extract_feat(bbox, ori_img, track_id, self.tracker_type_number)
+        person_name, person_feature = self.cut_photo_and_extract_feat(bbox, ori_img, track_id, self.tracker_type_number, self.camera_name)
         if self.tracker_type_number == 0:  # 入口摄像机，记录所有进入的人
             self.customers_log[person_name] = {self.camera_name: dt}
         else:
@@ -221,10 +220,10 @@ class VideoStreamTracker_2_Lines():
             ,dt
         ))
 
-    def cut_photo_and_extract_feat(self, bbox, ori_img, track_id, tracker_tpye_number):
+    def cut_photo_and_extract_feat(self, bbox, ori_img, track_id, tracker_tpye_number, cam_name):
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         if tracker_tpye_number == 0:
-            person_name = 'cus{}'.format(track_id)
+            person_name = '{}-{}'.format(cam_name, track_id)
             path = str(self._save_dir + '/' + person_name + '.jpg')
             makedir(path)
             cv2.imwrite(path, ROI_person)
@@ -240,7 +239,7 @@ class VideoStreamTracker_2_Lines():
                 idx = np.argmax(max_idx)
                 person_name = self.names[idx]  # 搜寻得到的
             else:
-                person_name = "new-{}".format(track_id)
+                person_name = '{}-{}'.format(cam_name, track_id)
 
             print("[DEBUG-reid] person_name: ", person_name)
             path_to_image = self._save_dir + '/{}.jpg'.format(person_name)
@@ -251,21 +250,6 @@ class VideoStreamTracker_2_Lines():
         # ------- 提取特征 --------
         person_feature = self.reid_model(ROI_person)
         return person_name, person_feature
-
-    # todo: to delete
-    def draw_info_to_frame(self, angle, last_track_id, ori_img, outputs, total_track):
-        ori_img = print_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
-        ori_img = draw_idx_frame(ori_img, self.idx_frame)
-        if last_track_id >= 0:
-            ori_img = print_newest_info(angle, last_track_id, ori_img)  # 打印撞线人的信息
-        if len(outputs) > 0:  # 展示跟踪结果
-            bbox_tlwh = []
-            bbox_xyxy = outputs[:, :4]
-            identities = outputs[:, -1]
-            draw_boxes_and_text(ori_img, bbox_xyxy, identities)  # 给每个detection画框
-            for bb_xyxy in bbox_xyxy:
-                bbox_tlwh.append(self.deepsort._xyxy_to_tlwh(bb_xyxy))
-        return ori_img
 
     def draw_info_to_frame_binary_lines(self, is_in, last_track_id, ori_img, outputs, total_track):
         ori_img = print_statistics_to_frame(self.down_count, ori_img, self.total_counter, total_track, self.up_count)
