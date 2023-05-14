@@ -54,7 +54,7 @@ def draw_boxes_and_text(img, bbox, identities=None, offset=(0, 0)):
 def draw_reid_person(img, bbox_xyxy, reid_results, names, identities=None, offset=(0, 0)):
     match_names = []
     for i, x in enumerate(bbox_xyxy):
-        person_name = names[reid_results[i]]
+        person_name = names[reid_results[i]] # todo: bug: list index out of range
         if person_name == "None":
             continue
 

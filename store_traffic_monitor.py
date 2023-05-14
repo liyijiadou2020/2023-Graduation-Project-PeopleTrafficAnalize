@@ -46,7 +46,7 @@ def parse_args():
     return parser.parse_args()
 
 class TrafficMonitor():
-    def __init__(self, cfg, args, path_in, path_out, path3):
+    def __init__(self, cfg, args, path_1, path_2, path_3):
         self._logger = get_logger("root")
         self.args = args
         use_cuda = args.use_cuda and torch.cuda.is_available()
@@ -56,13 +56,16 @@ class TrafficMonitor():
         self.yolo_model = YoloPersonDetect(self.args)
         self.deepsort = build_tracker(cfg, args.sort, use_cuda=use_cuda) # Deepsort with ReID
         imgsz = check_img_size(args.img_size, s=32)  # check img_size
-        self.dataset_1 = LoadImages(path_in, img_size=imgsz)
-        self.dataset_2 = LoadImages(path_out, img_size=imgsz)
-        self.dataset_3 = LoadImages(path3, img_size=imgsz)
+        self.dataset_1 = LoadImages(path_1, img_size=imgsz)
+        self.dataset_2 = LoadImages(path_2, img_size=imgsz)
+        self.dataset_3 = LoadImages(path_3, img_size=imgsz)
         # reid
         self.reid_model = Reid_feature()
         self.cus_names = []
         self.cus_features = None
+
+        self.new_add_feats = None
+        self.new_add_names = []
 
         exp_name = 'exp'
         project = ROOT / 'runs/tracks'
@@ -109,8 +112,14 @@ class TrafficMonitor():
         self.cus_features, self.cus_names, self.cus_log = self.cam1_tracker.track()
 
         # self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
-        self.cus_log = self.cam2_tracker.track(self.cus_features, self.cus_names, self.cus_log)
-        self.cus_log = self.cam3_tracker.track(self.cus_features, self.cus_names, self.cus_log)
+        # self.cus_log = self.cam2_tracker.track(self.cus_features, self.cus_names, self.cus_log)
+        # self.cus_log = self.cam3_tracker.track(self.cus_features, self.cus_names, self.cus_log)
+
+        # 2023年5月13日 ： 新增feats --------
+        self.cus_features, self.cus_names, self.cus_log = self.cam2_tracker.track(self.cus_features, self.cus_names, self.cus_log)
+        self.cus_features, self.cus_names, self.cus_log = self.cam3_tracker.track(self.cus_features, self.cus_names, self.cus_log)
+
+
 
         sav_txt = open(file="{}/cus_log.txt".format(self.save_dir), mode="w", encoding="utf-8")
         sav_txt.write(str(self.cus_log))
@@ -172,6 +181,6 @@ if __name__ == '__main__':
     cfg = get_config()
     cfg.merge_from_file(args.config_deepsort)
 
-    monitor = TrafficMonitor(cfg, args, path_in=args.video_path, path_out=args.video_out_path, path3=args.video3_path)
+    monitor = TrafficMonitor(cfg, args, path_1=args.video_path, path_2=args.video_out_path, path_3=args.video3_path)
     with torch.no_grad():
         monitor.demo()

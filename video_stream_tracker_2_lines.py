@@ -68,6 +68,8 @@ class VideoStreamTracker_2_Lines():
         self.reid_model = reid_model
         self.feats = feats
         self.names = names
+
+        self.new_add_feats = None # todo: 新增，如果发现该镜头下新出现了人，把它放到增加的feats中
         # ------- 记录触线时间 -------
         self.camera_name = camera_name
         self.customers_log = {}
@@ -134,7 +136,8 @@ class VideoStreamTracker_2_Lines():
                     cv2.line(ori_img, yellow_line[0], yellow_line[1], (0, 0, 255), 1)  # 触碰线的情况下画红线
                     already_counted.append(track_id)  # Set already counted for ID to true.
                     self.up_count += 1
-                    self.save_photo_and_wirte_log(bbox, ori_img, track_id, self.tracker_type_number) # 人流量统计的主要处理逻辑
+                    self.save_photo_and_wirte_log_add_new_feats(bbox, ori_img, track_id,
+                                                                self.tracker_type_number)  # 人流量统计的主要处理逻辑
                 elif intersect(midpoint_1, midpoint_0, green_line[0], green_line[1]) \
                         and track_id not in already_counted: # 离开
                     is_in = False
@@ -146,7 +149,8 @@ class VideoStreamTracker_2_Lines():
 
             # 3.重识别结果 - Enter摄像头不需要管这个
             if self.tracker_type_number != 0:
-                img, match_names = self.draw_reid_result_to_frame(features, ori_img, xy)
+                img, match_names = self.draw_reid_result_to_frame(features, ori_img, xy) #todo: bug
+
             # 4.绘制统计信息
             ori_img = self.draw_box_and_info_to_frame(is_in, last_track_id, ori_img, outputs, self.total_track)
 
@@ -197,12 +201,15 @@ class VideoStreamTracker_2_Lines():
             customer_logs = self.customers_log
             return feats, names, customer_logs
         else:
-            # todo: 把这个镜头下新出现的feat和name也添加到query_features和names里去
-            return self.customers_log
+            # todo: 把这个镜头下新出现的feat和name也添加到query_features和names里去------
+            feats, names, customer_logs = self.feats, self.names, self.customers_log
+            return feats, names, customer_logs
+            # ------------------------------------------------
+            # return self.customers_log
 
         # vid_writer.release()
 
-    def save_photo_and_wirte_log(self, bbox, ori_img, track_id, tracker_type_number):
+    def save_photo_and_wirte_log_add_new_feats(self, bbox, ori_img, track_id, tracker_type_number):
         # ------- reid 获取 person_name --------
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         person_feature = self.reid_model(ROI_person)
@@ -217,6 +224,10 @@ class VideoStreamTracker_2_Lines():
         else:
             if person_name not in self.customers_log:
                 self.customers_log[person_name] = {self.camera_name: dt}
+                # ------- todo: 添加新的外观向量 + name -----------------
+                self.feats = np.concatenate((self.feats, person_feature), axis=0)
+                self.names.append(person_name)
+                # ---------------------------------------------
             else:
                 self.customers_log[person_name][self.camera_name] = dt
 
@@ -248,6 +259,7 @@ class VideoStreamTracker_2_Lines():
                 person_name = self.names[idx]  # 搜寻得到的
             else:
                 person_name = '{}-{}'.format(cam_name, track_id)
+
             path = str(self._save_dir + '/' + person_name + '.jpg')
             if os.path.exists(path):
                 path = increment_person_name(path)
@@ -277,7 +289,7 @@ class VideoStreamTracker_2_Lines():
         max_idx[maximum < 0.5] = -1
         score = maximum
         reid_results = max_idx
-        img, match_names = draw_reid_person(ori_img, xy, reid_results, self.names)  # draw_person name
+        img, match_names = draw_reid_person(ori_img, xy, reid_results, self.names)  # todo:bug
         return img, match_names
 
     def update_reid_query(self, features, names):
