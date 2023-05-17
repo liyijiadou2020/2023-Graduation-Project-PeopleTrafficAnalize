@@ -69,7 +69,8 @@ class VideoStreamTracker_2_Lines():
         self.feats = feats
         self.names = names
 
-        self.new_add_feats = None # todo: 新增，如果发现该镜头下新出现了人，把它放到增加的feats中
+        self.new_add_feats = np.ones((1, 512), dtype=np.int) # todo: 新增，如果发现该镜头下新出现了人，把它放到增加的feats中
+        self.new_add_names = []
         # ------- 记录触线时间 -------
         self.camera_name = camera_name
         self.customers_log = {}
@@ -202,11 +203,18 @@ class VideoStreamTracker_2_Lines():
             return feats, names, customer_logs
         else:
             # todo: 把这个镜头下新出现的feat和name也添加到query_features和names里去------
+            # new_add_feats需要翻转
+            self.new_add_feats = self.new_add_feats[:-1, :] # 取所有行，但不包括最后一行
+            self.new_add_names = self.new_add_names[::-1] # 名字翻转
+            self.new_add_names.append("None")
+
+            self.feats = np.concatenate((self.feats, self.new_add_feats), axis=0)
+            self.names = self.names[:-1] + self.new_add_names # 去掉names的最后一个"None"
+
+            # ---------------
             feats, names, customer_logs = self.feats, self.names, self.customers_log
             return feats, names, customer_logs
             # ------------------------------------------------
-            # return self.customers_log
-
         # vid_writer.release()
 
     def save_photo_and_wirte_log_add_new_feats(self, bbox, ori_img, track_id, tracker_type_number):
@@ -225,8 +233,8 @@ class VideoStreamTracker_2_Lines():
             if person_name not in self.customers_log:
                 self.customers_log[person_name] = {self.camera_name: dt}
                 # ------- todo: 添加新的外观向量 + name -----------------
-                self.feats = np.concatenate((self.feats, person_feature), axis=0)
-                self.names.append(person_name)
+                self.new_add_feats = np.concatenate((person_feature, self.new_add_feats), axis=0) #todo: 最后需要翻转一下
+                self.new_add_names.append(person_name)
                 # ---------------------------------------------
             else:
                 self.customers_log[person_name][self.camera_name] = dt
@@ -243,7 +251,8 @@ class VideoStreamTracker_2_Lines():
 
     def save_photo_and_get_person_name_by_reid(self, bbox, ori_img, track_id, tracker_tpye_number, cam_name):
         ROI_person = ori_img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
-        person_name = '{}-{}'.format(cam_name, track_id)
+        # person_name = '{}-{}'.format(cam_name, track_id)
+        person_name = '{}-{}'.format('cus', track_id)
         path = str(self._save_dir + '/' + person_name + '.jpg')
 
         if tracker_tpye_number != 0:
@@ -258,8 +267,8 @@ class VideoStreamTracker_2_Lines():
                 idx = np.argmax(max_idx)
                 person_name = self.names[idx]  # 搜寻得到的
             else:
-                person_name = '{}-{}'.format(cam_name, track_id)
-
+                # person_name = '{}-{}'.format(cam_name, track_id)
+                person_name = '{}-{}-{}'.format(cam_name,'cus', track_id)
             path = str(self._save_dir + '/' + person_name + '.jpg')
             if os.path.exists(path):
                 path = increment_person_name(path)

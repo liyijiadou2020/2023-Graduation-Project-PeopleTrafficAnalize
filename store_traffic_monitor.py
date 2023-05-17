@@ -75,32 +75,32 @@ class TrafficMonitor():
         self.save_dir = save_dir
         makedir(self.save_dir)
         # --------- cus_log -----------
-        cam1_name = 'in'
-        cam2_name = 'in2'
-        cam3_name = 'in3'
+        cam1_name = 'cam-1'
+        cam2_name = 'cam-2'
+        cam3_name = 'cam-3'
         self.cus_log = {}
-        # -----------------------------------
-        p1 = [0.31, 0.74]
-        p2 = [1.00, 0.59]
-        p3 = [0.31, 0.70]
-        p4 = [1.00, 0.55]
+        # ------------------------------------
+        p1 = [0.65, 0.0]
+        p2 = [0.65, 1.0]
+        p3 = [0.51, 0]
+        p4 = [0.51, 1.0]
         self.save_dir_in = str(save_dir / cam1_name)
         makedir(self.save_dir_in)
         # 0 means this camera is entering camera
         self.cam1_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model, self.deepsort, self.dataset_1,
                                                        None, [], cam1_name, self.save_dir_in, p1, p2, p3, p4, 0)
-        p2_1 = [0.02, 0.21]
-        p2_2 = [0.08, 1]
-        p2_3 = [0, 0.21]
-        p2_4 = [0.06, 1]
+        p2_1 = [0.23, 0]
+        p2_2 = [0.23, 1]
+        p2_3 = [0.13, 0]
+        p2_4 = [0.13, 1]
         # 3 means this camera in store
         self.cam2_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model, self.deepsort, self.dataset_2,
                                                        None, [], cam2_name, str(save_dir / cam2_name), p2_1, p2_2, p2_3,
                                                        p2_4, 3)
-        p3_1 = [0.52, 0.51]
-        p3_2 = [0.52, 0.93]
+        p3_1 = [0.62, 0.51]
+        p3_2 = [0.62, 1.0]
         p3_3 = [0.42, 0.51]
-        p3_4 = [0.42, 0.93]
+        p3_4 = [0.42, 1.0]
         self.cam3_tracker = VideoStreamTracker_2_Lines(self.yolo_model, self.reid_model, self.deepsort, self.dataset_3,
                                                        None, [], cam3_name, str(save_dir / cam3_name), p3_1, p3_2, p3_3,
                                                        p3_4, 3)
@@ -112,13 +112,8 @@ class TrafficMonitor():
         self.cus_features, self.cus_names, self.cus_log = self.cam1_tracker.track()
 
         # self.cus_features, self.cus_names = self.feature_extract_from_in_dir()
-        # self.cus_log = self.cam2_tracker.track(self.cus_features, self.cus_names, self.cus_log)
-        # self.cus_log = self.cam3_tracker.track(self.cus_features, self.cus_names, self.cus_log)
-
-        # 2023年5月13日 ： 新增feats --------
         self.cus_features, self.cus_names, self.cus_log = self.cam2_tracker.track(self.cus_features, self.cus_names, self.cus_log)
         self.cus_features, self.cus_names, self.cus_log = self.cam3_tracker.track(self.cus_features, self.cus_names, self.cus_log)
-
 
 
         sav_txt = open(file="{}/cus_log.txt".format(self.save_dir), mode="w", encoding="utf-8")
@@ -158,11 +153,11 @@ class TrafficMonitor():
             pytorch_output = feat.numpy()
             embs = np.concatenate((pytorch_output, embs), axis=0)
             names.append(image_name[0:-4])  # 去除.jpg作为顾客的名字
-        names = names[::-1]
+        names = names[::-1] # 翻转
         names.append("None")
         feat_path = os.path.join(str(self.save_dir), 'query_features')
         names_path = os.path.join(str(self.save_dir), 'names')
-        np.save(feat_path, embs[:-1, :])
+        np.save(feat_path, embs[:-1, :]) # 取所有行，但不包括最后一行
         np.save(names_path, names)  # save query
 
         path = '{}/query_features.npy'.format(str(self.save_dir))
