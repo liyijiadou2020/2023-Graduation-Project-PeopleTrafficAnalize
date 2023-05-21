@@ -73,7 +73,7 @@ def draw_line(point_1, point_2, ori_img, color=(0, 255, 255)):
             ( int(point_2[0] * ori_img.shape[1]), int(point_2[1] * ori_img.shape[0]))
             ]
 
-    cv2.line(ori_img, line[0], line[1], color, 1)
+    cv2.line(ori_img, line[0], line[1], color, 3)
     return line
 
 # def print_statistics_to_frame(down_count, ori_img, total_counter, total_track, up_count):
